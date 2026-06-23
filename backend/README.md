@@ -35,6 +35,7 @@ A shared anime library web app for two users. Search for anime, add them to a sh
 
 ```
 ── backend/
+|
 ├── core/
 │   ├── config.py          # Environment variable loading
 │   ├── dependencies.py    # get_current_user FastAPI dependency
@@ -46,6 +47,7 @@ A shared anime library web app for two users. Search for anime, add them to a sh
 │   └── users.py           # User management endpoints
 ├── services/
 │   └── anime_client.py    # Jikan API integration
+|
 ├── database.py            # SQLAlchemy engine and session setup
 ├── models.py              # SQLAlchemy table models
 ├── user_schema.py         # Pydantic response schemas
