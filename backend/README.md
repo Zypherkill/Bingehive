@@ -34,7 +34,7 @@ A shared anime library web app for two users. Search for anime, add them to a sh
 ## Project Structure
 
 ```
-── backend/
+backend/
 |
 ├── core/
 │   ├── config.py          # Environment variable loading
