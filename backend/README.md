@@ -31,11 +31,6 @@ A shared anime library web app for two users. Search for anime, add them to a sh
 - [python-jose](https://python-jose.readthedocs.io/) — JWT token generation and verification
 - [httpx](https://www.python-httpx.org/) — Async HTTP client for external API calls
 
-**Frontend** *(coming)*
-- Next.js, TypeScript, Tailwind CSS
-
----
-
 ## Project Structure
 
 ```
@@ -56,7 +51,6 @@ bingehive/
 │   ├── models.py              # SQLAlchemy table models
 │   ├── user_schema.py         # Pydantic response schemas
 │   └── main.py                # FastAPI app entry point
-└── frontend/                  # (coming)
 ```
 
 ---
