@@ -34,23 +34,22 @@ A shared anime library web app for two users. Search for anime, add them to a sh
 ## Project Structure
 
 ```
-bingehive/
-├── backend/
-│   ├── core/
-│   │   ├── config.py          # Environment variable loading
-│   │   ├── dependencies.py    # get_current_user FastAPI dependency
-│   │   └── security.py        # Password hashing and JWT logic
-│   ├── routers/
-│   │   ├── auth.py            # Login endpoint
-│   │   ├── anime.py           # Anime search endpoint
-│   │   ├── library.py         # Shared library endpoints
-│   │   └── users.py           # User management endpoints
-│   ├── services/
-│   │   └── anime_client.py    # Jikan API integration
-│   ├── database.py            # SQLAlchemy engine and session setup
-│   ├── models.py              # SQLAlchemy table models
-│   ├── user_schema.py         # Pydantic response schemas
-│   └── main.py                # FastAPI app entry point
+── backend/
+├── core/
+│   ├── config.py          # Environment variable loading
+│   ├── dependencies.py    # get_current_user FastAPI dependency
+│   └── security.py        # Password hashing and JWT logic
+├── routers/
+│   ├── auth.py            # Login endpoint
+│   ├── anime.py           # Anime search endpoint
+│   ├── library.py         # Shared library endpoints
+│   └── users.py           # User management endpoints
+├── services/
+│   └── anime_client.py    # Jikan API integration
+├── database.py            # SQLAlchemy engine and session setup
+├── models.py              # SQLAlchemy table models
+├── user_schema.py         # Pydantic response schemas
+└── main.py                # FastAPI app entry point
 ```
 
 ---
