@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
+from routers import anime
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Anime, LibraryEntry, LibraryStatus, UserAnimeData
 from core.dependencies import get_current_user
 from pydantic import BaseModel
 from services.anime_client import get_anime_details
+import random
 
 router = APIRouter(prefix="/library",tags=["library"])
 
@@ -105,3 +107,54 @@ def update_user_data(anime_id: int, request: UserDataRequest, db: Session = Depe
     db.commit()
     db.refresh(user_data)
     return user_data
+
+@router.delete("/{anime_id}")
+def remove_anime(anime_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    entry = db.query(LibraryEntry).filter(LibraryEntry.anime_id == anime_id).first()
+    if not entry:
+        raise HTTPException(status_code=404, detail="Anime not found in the library")
+    
+    db.delete(entry)
+    db.commit()
+    return {"detail": "Anime removed from library"}
+
+
+class AddCustomAnimeRequest(BaseModel):
+    title: str
+    image_url: str = None
+    synopsis: str = None
+    episodes: int = None
+    mean_score: float = None
+
+@router.post("/add-custom")
+def add_custom_anime(request: AddCustomAnimeRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    custom_id = -random.randint(1, 999999)
+    while db.query(Anime).filter(Anime.id == custom_id).first():
+        custom_id = -random.randint(1, 999999)
+
+    anime = Anime(
+            id=custom_id,
+            title=request.title,
+            image_url=request.image_url,
+            synopsis=request.synopsis,
+            episodes=request.episodes,
+            mean_score=request.mean_score
+            )
+    db.add(anime)
+    db.commit()
+    db.refresh(anime)
+        
+    existing = db.query(LibraryEntry).filter(LibraryEntry.anime_id == custom_id).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="Anime already exists in the library")
+
+    entry = LibraryEntry(
+            anime_id=custom_id,
+            status=LibraryStatus.plan_to_watch,
+            added_by=current_user.id,
+            updated_by=current_user.id
+        )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return entry
