@@ -31,6 +31,15 @@ def update_email(request: UpdateEmailRequest, db: Session = Depends(get_db), cur
     db.refresh(current_user)
     return current_user
 
+
+def validate_password(password: str):
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    if not any(c.isupper() for c in password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one uppercase letter")
+    if not any(c.isdigit() for c in password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one number")
+
 @router.patch("/update-password", response_model=UserResponse)
 def update_password(request: UpdatePasswordRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     if not current_user:
@@ -39,6 +48,7 @@ def update_password(request: UpdatePasswordRequest, db: Session = Depends(get_db
     if not verify_password(request.current_password, current_user.password_hash):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
     
+    validate_password(request.new_password)
     current_user.password_hash = hash_password(request.new_password)
     db.commit()
     db.refresh(current_user)
