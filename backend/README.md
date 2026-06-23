@@ -66,7 +66,7 @@ backend/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/bingehive.git
+git clone https://github.com/zypherkill/bingehive.git
 cd bingehive/backend
 
 # Create and activate virtual environment
