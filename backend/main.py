@@ -1,13 +1,13 @@
 from fastapi import FastAPI, Depends
-from routers import auth
+from routers import auth, anime, library
 from core.dependencies import get_current_user
 from models import User
-from routers import anime
 
 app = FastAPI()
 
 app.include_router(auth.router)
 app.include_router(anime.router)
+app.include_router(library.router)
 
 @app.get("/")
 def read_root():
