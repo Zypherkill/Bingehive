@@ -1,6 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from services.anime_client import search_anime
 from core.dependencies import get_current_user
+from services.anilist_client import get_anime_streaming_links
+from models import Anime
+from database import get_db
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/anime", tags=["anime"])
 
@@ -12,3 +16,15 @@ async def search_anime_endpoint(q: str = None, genres: str = None, current_user=
     if results is None:
         raise HTTPException(status_code=503, detail="Could not reach Anime API")
     return results
+
+
+@router.get("/{anime_id}/streaming")
+async def get_anime_streaming_links_endpoint(anime_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    anime = db.query(Anime).filter(Anime.id == anime_id).first()
+    if not anime:
+        raise HTTPException(status_code=404, detail="Anime not found")
+
+    links = await get_anime_streaming_links(anime.title)
+    if links is None:
+        raise HTTPException(status_code=503, detail="Could not reach AniList API")
+    return links

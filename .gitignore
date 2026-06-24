@@ -1,9 +1,9 @@
 # Backend
 backend/venv/
 backend/.env
+backend/start.env
 backend/__pycache__/
 backend/**/__pycache__/
-backend/start.text
 *.pyc
 
 # Frontend
