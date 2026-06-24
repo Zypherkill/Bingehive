@@ -6,6 +6,7 @@ class UserResponse(BaseModel):
     id: uuid.UUID
     email: str
     username: str
+    avatar_url: str | None = None
     created_at: datetime
 
     class Config:

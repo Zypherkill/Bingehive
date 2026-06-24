@@ -1,11 +1,13 @@
+import uuid
 from database import get_db
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from models import User
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from core.dependencies import get_current_user
 from core.security import verify_password, hash_password
 from user_schema import UserResponse
+from core.supabase import supabase
 
 class UpdateEmailRequest(BaseModel):
     new_email: str
@@ -13,7 +15,6 @@ class UpdateEmailRequest(BaseModel):
 class UpdatePasswordRequest(BaseModel):
     current_password: str
     new_password: str
-
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -53,3 +54,30 @@ def update_password(request: UpdatePasswordRequest, db: Session = Depends(get_db
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@router.post("/avatar", response_model=UserResponse)
+async def upload_avatar(file: UploadFile = File(...), db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if file.content_type not in ["image/jpeg", "image/png", "image/webp"]:
+        raise HTTPException(status_code=400, detail="Only JPEG, PNG and WebP images are allowed")
+    if file.size > 2 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File size must be under 2MB")
+    
+    file_ext = file.filename.split(".")[-1]
+    file_name = f"{current_user.id}/{uuid.uuid4()}.{file_ext}"
+
+    contents = await file.read()
+    supabase.storage.from_("avatars").upload(file_name, contents, {"content-type": file.content_type})
+    url = supabase.storage.from_("avatars").get_public_url(file_name)
+
+    current_user.avatar_url = url
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+@router.post("/avatar-test")
+async def test_upload(file: UploadFile = File(...)):
+    return {"filename": file.filename, "content_type": file.content_type}
