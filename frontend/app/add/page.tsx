@@ -1,10 +1,13 @@
 'use client';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
+import { PageTransition } from '@/components/PageTransition';
 
 const Add = () => {
     return (
         <ProtectedRoute>
-            <div>Add page</div>
+            <PageTransition>
+                <div>Add page</div>
+            </PageTransition>
         </ProtectedRoute>
     );
 }

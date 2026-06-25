@@ -11,26 +11,44 @@ export const NavBar = () => {
 	const isActive = (path: string) => pathname === path;
 
 	return (
-		<nav className='bg-gray-900 text-white p-4 grid grid-cols-3 gap-4'>
+		<nav
+			className='p-4 grid grid-cols-3 gap-4 sticky top-0 z-50'
+			style={{ backgroundColor: 'var(--color-bg-dark)' }}>
 			<div className='flex justify-center items-center'>
-				<h1 className='text-cyan-400 text-2xl font-bold'>Bingehive</h1>
+				<h1
+					className='text-2xl font-bold'
+					style={{ color: 'var(--color-primary)' }}>
+					Bingehive
+				</h1>
 			</div>
 			<ul className='flex gap-4 justify-center items-center'>
 				<Link
 					href='/'
-					className={`text-cyan-400 ${isActive('/') ? 'border-b-2 border-cyan-400 pb-1' : ''}`}>
+					className={`${isActive('/') ? 'font-bold border-b-2 pb-1' : ''}`}
+					style={{
+						color: 'var(--color-primary)',
+						borderColor: 'var(--color-primary)',
+					}}>
 					Library
 				</Link>
 
 				<Link
 					href='/search'
-					className={`text-cyan-400 ${isActive('/search') ? 'border-b-2 border-cyan-400 pb-1' : ''}`}>
+					className={`${isActive('/search') ? 'font-bold border-b-2 pb-1' : ''}`}
+					style={{
+						color: 'var(--color-primary)',
+						borderColor: 'var(--color-primary)',
+					}}>
 					Search
 				</Link>
 
 				<Link
 					href='/add'
-					className={`text-cyan-400 ${isActive('/add') ? 'border-b-2 border-cyan-400 pb-1' : ''}`}>
+					className={`${isActive('/add') ? 'font-bold border-b-2 pb-1' : ''}`}
+					style={{
+						color: 'var(--color-primary)',
+						borderColor: 'var(--color-primary)',
+					}}>
 					Add
 				</Link>
 			</ul>
@@ -42,16 +60,27 @@ export const NavBar = () => {
 							className='w-8 h-8 rounded-full object-cover'
 						/>
 					) : user ? (
-						<div className='w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white'>
+						<div
+							className='w-8 h-8 rounded-full flex items-center justify-center'
+							style={{
+								backgroundColor: 'var(--color-bg-secondary)',
+								color: 'var(--color-text-white)',
+							}}>
 							{user.username[0].toUpperCase()}
 						</div>
 					) : (
-						<div className='w-8 h-8 rounded-full bg-gray-600' />
+						<div
+							className='w-8 h-8 rounded-full'
+							style={{
+								backgroundColor: 'var(--color-bg-secondary)',
+							}}
+						/>
 					)}
 				</Link>
 				<button
 					onClick={logout}
-					className='text-cyan-400 hover:text-cyan-300 transition-colors'
+					className='hover:opacity-80 transition-opacity'
+					style={{ color: 'var(--color-primary)' }}
 					title='Logout'>
 					<svg
 						className='w-6 h-6'

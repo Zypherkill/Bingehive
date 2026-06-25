@@ -3,13 +3,27 @@ import { useState, useEffect } from 'react';
 import { LibraryEntryFull, LibraryStatus } from '@/types';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { getLibrary } from '@/lib/api';
-import {useAuthStore} from '@/store/authStore';
+import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
+import { statusColor } from '@/utils/utils';
+import { PageTransition } from '@/components/PageTransition';
+import {motion} from 'framer-motion';
 
 const Home = () => {
-	const { user } = useAuthStore();
 	const [library, setLibrary] = useState<LibraryEntryFull[]>([]);
 	const [filter, setFilter] = useState<LibraryStatus | 'all'>('all');
 	const [isLoading, setIsLoading] = useState(true);
+	const [showAllFilters, setShowAllFilters] = useState(false);
+
+	const visibleFilters: (LibraryStatus | 'all')[] = [
+		'all',
+		'plan_to_watch',
+		'completed',
+	];
+	const extraFilters: (LibraryStatus | 'all')[] = [
+		'watching',
+		'on_hold',
+		'dropped',
+	];
 
 	useEffect(() => {
 		getLibrary().then((data) => {
@@ -36,19 +50,9 @@ const Home = () => {
 		(entry) => entry.status === 'watching',
 	);
 
-	const filters: (LibraryStatus | 'all')[] = [
-		'all',
-		'watching',
-		'completed',
-		'plan_to_watch',
-		'on_hold',
-		'dropped',
-	];
-
-	
-			
 	return (
 		<ProtectedRoute>
+			<PageTransition>
 			<div className='flex flex-col items-center min-h-screen mt-6'>
 				{currentlyWatching && (
 					<div
@@ -59,53 +63,136 @@ const Home = () => {
 							backgroundPosition: 'center',
 						}}>
 						<div className='flex flex-col justify-end h-full p-8 min-h-96'>
-							<p className='text-gray-400 text-sm uppercase tracking-wider'>
+							<p
+								className='text-sm uppercase tracking-wider'
+								style={{
+									color: 'var(--color-text-secondary)',
+								}}>
 								Currently Watching
 							</p>
-							<h2 className='text-white text-4xl font-bold mt-2'>
+							<h2
+								className='text-4xl font-bold mt-2'
+								style={{ color: 'var(--color-text-white)' }}>
 								{currentlyWatching.anime.title}
 							</h2>
-						<p className='text-gray-300 mt-2 line-clamp-2'>
+							<p
+								className='mt-2 line-clamp-2'
+								style={{ color: 'var(--color-text-primary)' }}>
 								{currentlyWatching.anime.synopsis ??
 									'No synopsis available.'}
 							</p>
-							<button className='mt-4 w-fit px-6 py-2 border border-cyan-400 text-cyan-400 rounded hover:bg-cyan-400 hover:text-black transition-colors'>
+							<button
+								className='mt-4 w-fit px-6 py-2 rounded transition-colors'
+								style={{
+									border: '2px solid var(--color-primary)',
+									color: 'var(--color-primary)',
+								}}
+								onMouseEnter={(e) => {
+									e.currentTarget.style.backgroundColor =
+										'var(--color-primary)';
+									e.currentTarget.style.color =
+										'var(--color-text-black)';
+								}}
+								onMouseLeave={(e) => {
+									e.currentTarget.style.backgroundColor =
+										'transparent';
+									e.currentTarget.style.color =
+										'var(--color-primary)';
+								}}>
 								Randomize Next
 							</button>
 						</div>
 					</div>
 				)}
-				<h1 className='text-3xl font-bold text-cyan-400 mt-6 mb-4'>
-					Our Sanctuary
-				</h1>
-				<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 p-6 max-w-7xl mx-auto'>
-					{filters.map((f, index) => (
+				<div className='flex items-center justify-end w-full max-w-7xl mx-auto px-6 mt-6 mb-4'>
+					<div
+						className='flex rounded-lg p-1 gap-1 overflow-hidden transition-all duration-700'
+						style={{ backgroundColor: 'var(--color-bg-card)' }}>
+						{/* Alltid synliga */}
+						{visibleFilters.map((f) => (
+							<button
+								key={f}
+								onClick={() => setFilter(f)}
+								className='px-4 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap'
+								style={{
+									backgroundColor:
+										filter === f
+											? 'var(--color-primary)'
+											: 'transparent',
+									color:
+										filter === f
+											? 'var(--color-text-black)'
+											: 'var(--color-text-secondary)',
+								}}>
+								{f
+									.replace(/_/g, ' ')
+									.replace(/^\w/, (c) => c.toUpperCase())}
+							</button>
+						))}
+
+						{/* Extra knappar — alltid renderade men gömda */}
+						{extraFilters.map((f) => (
+							<button
+								key={f}
+								onClick={() => setFilter(f)}
+								className='px-4 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-all duration-700'
+								style={{
+									backgroundColor:
+										filter === f
+											? 'var(--color-primary)'
+											: 'transparent',
+									color:
+										filter === f
+											? 'var(--color-text-black)'
+											: 'var(--color-text-secondary)',
+									maxWidth: showAllFilters ? '150px' : '0px',
+									opacity: showAllFilters ? 1 : 0,
+									padding: showAllFilters ? undefined : '0',
+									overflow: 'hidden',
+								}}>
+								{f
+									.replace(/_/g, ' ')
+									.replace(/^\w/, (c) => c.toUpperCase())}
+							</button>
+						))}
+
 						<button
-							key={f}
-							className={`px-4 py-2 full ${
-								filter === f
-									? 'bg-cyan-400 text-gray-900'
-									: 'bg-gray-700 text-white'
-							} ${index === 0 ? 'rounded-l-lg' : ''} ${
-								index === filters.length - 1 ? 'rounded-r-lg' : ''
-							}`}
-							onClick={() => setFilter(f)}>
-							{f.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())}
+							onClick={() => setShowAllFilters(!showAllFilters)}
+							className='px-3 py-1.5 rounded-md transition-all duration-300'
+							style={{ color: 'var(--color-text-secondary)' }}>
+							{showAllFilters ? (
+								<FaChevronLeft />
+							) : (
+								<FaChevronRight />
+							)}
 						</button>
-					))}
+					</div>
 				</div>
 				{isLoading ? (
-					<p className='text-white'>Loading...</p>
+					<p style={{ color: 'var(--color-text-white)' }}>
+						Loading...
+					</p>
 				) : filtered.length === 0 ? (
-					<p className='text-white'>No anime found.</p>
+					<p style={{ color: 'var(--color-text-white)' }}>
+						No anime found.
+					</p>
 				) : (
 					<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6 max-w-7xl mx-auto'>
-						{filtered.map((entry) => (
-							<div
+						{filtered.map((entry, index) => (
+							<motion.div
 								key={entry.anime_id}
-								className='relative cursor-pointer'>
+								className='relative cursor-pointer'
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: index * 0.1 }}
+							>
 								{/* Betyg */}
-								<div className='absolute top-2 left-2 bg-black/70 text-yellow-400 text-sm px-2 py-1 rounded flex items-center gap-1'>
+								<div
+									className='absolute top-2 left-2 text-sm px-2 py-1 rounded flex items-center gap-1'
+									style={{
+										backgroundColor: 'rgba(0,0,0,0.7)',
+										color: 'var(--color-accent-warning)',
+									}}>
 									⭐ {entry.anime.mean_score ?? 'N/A'}
 								</div>
 								<img
@@ -114,21 +201,38 @@ const Home = () => {
 										'/placeholder.png'
 									}
 									alt={entry.anime.title}
-									className='w-full h-64 object-cover rounded-lg'
+									className='w-full h-64 object-cover rounded-t-2xl'
 								/>
-								<p className='text-white font-semibold truncate mt-2'>
-									{entry.anime.title}
-								</p>
-								<p className='text-cyan-400 text-sm font-bold capitalize'>
-									{entry.status.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())}
-								</p>
-							</div>
+								<div
+									className='p-3'
+									style={{
+										backgroundColor: 'var(--color-bg-card)',
+										borderRadius: '0 0 0.5rem 0.5rem',
+									}}>
+									<p
+										className='font-semibold truncate'
+										style={{
+											color: 'var(--color-text-white)',
+										}}>
+										{entry.anime.title}
+									</p>
+									<p
+										className={`text-sm font-bold capitalize ${statusColor[entry.status]}`}>
+										{entry.status
+											.replace(/_/g, ' ')
+											.replace(/^\w/, (c) =>
+												c.toUpperCase(),
+											)}
+									</p>
+								</div>
+							</motion.div>
 						))}
 					</div>
 				)}
 			</div>
+			</PageTransition>
 		</ProtectedRoute>
 	);
-}
+};
 
 export default Home;

@@ -33,14 +33,14 @@ function logout(): void {
 	localStorage.removeItem('token');
 }
 
-function searchAnime(
-	q?: string,
-	genres?: string,
-): Promise<{ data: Anime[] }> {
-	const genreQuery = genres ? `&genres=${genres}` : '';
-	return fetch(`${API_URL}/anime/search?q=${q}${genreQuery}`, {
-		headers: authHeaders(),
-	}).then((res) => res.json());
+function searchAnime(q?: string, genres?: string): Promise<{ data: Anime[] }> {
+    const params = new URLSearchParams();
+    if (q) params.append('q', q);
+    if (genres) params.append('genres', genres);
+    
+    return fetch(`${API_URL}/anime/search?${params.toString()}`, {
+        headers: authHeaders(),
+    }).then((res) => res.json());
 }
 
 export function deleteAnime(animeId: number): Promise<{ detail: string }> {

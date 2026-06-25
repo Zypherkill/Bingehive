@@ -4,6 +4,7 @@ import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
 import { updateEmail, updatePassword, uploadAvatar } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { PageTransition } from '@/components/PageTransition';
 
 const Settings = () => {
 	const { user, fetchUser } = useAuthStore();
@@ -56,31 +57,65 @@ const Settings = () => {
 
 	return (
 		<ProtectedRoute>
-			<div className='bg-gray-900 min-h-screen py-8'>
+            <PageTransition>
+			<div
+				className='min-h-screen py-8'
+				style={{ backgroundColor: 'var(--color-bg-dark)' }}>
 				<div className='max-w-4xl mx-auto px-4'>
-					<h1 className='text-4xl font-bold text-cyan-400 mb-8'>
+					<h1
+						className='text-4xl font-bold mb-8'
+						style={{ color: 'var(--color-primary)' }}>
 						Settings
 					</h1>
 
 					{/* All Settings in One Section */}
-					<div className='bg-gray-800 p-6 rounded-lg'>
+					<div
+						className='p-6 rounded-lg'
+						style={{ backgroundColor: 'var(--color-bg-card)' }}>
 						{/* Profile Picture */}
-						<div className='mb-12 pb-12 border-b border-gray-700'>
+						<div
+							className='mb-12 pb-12'
+							style={{
+								borderBottom: `1px solid var(--color-bg-input)`,
+							}}>
 							<div className='flex justify-center'>
 								<div className='relative w-fit'>
-									<div className='w-40 h-40 rounded-full border-4 border-cyan-400'>
+									<div
+										className='w-40 h-40 rounded-full border-4 p-2'
+										style={{
+											borderColor: 'var(--color-primary)',
+										}}>
 										{user?.avatar_url ? (
 											<img
 												src={user.avatar_url}
 												className='w-full h-full rounded-full object-cover'
 											/>
 										) : (
-											<div className='w-full h-full rounded-full bg-gray-600 flex items-center justify-center text-white text-6xl'>
+											<div
+												className='w-full h-full rounded-full flex items-center justify-center text-6xl'
+												style={{
+													backgroundColor:
+														'var(--color-bg-secondary)',
+													color: 'var(--color-text-white)',
+												}}>
 												{user?.username[0].toUpperCase()}
 											</div>
 										)}
 									</div>
-									<label className='absolute bottom-0 right-0 bg-cyan-400 rounded-full p-2 cursor-pointer hover:bg-cyan-300 transition-colors'>
+									<label
+										className='absolute bottom-0 right-0 rounded-full p-2 cursor-pointer transition-colors'
+										style={{
+											backgroundColor:
+												'var(--color-primary)',
+										}}
+										onMouseEnter={(e) =>
+											(e.currentTarget.style.backgroundColor =
+												'var(--color-primary-light)')
+										}
+										onMouseLeave={(e) =>
+											(e.currentTarget.style.backgroundColor =
+												'var(--color-primary)')
+										}>
 										<input
 											type='file'
 											accept='image/*'
@@ -94,8 +129,11 @@ const Settings = () => {
 											className='hidden'
 										/>
 										<svg
-											className='w-5 h-5 text-gray-900'
+											className='w-5 h-5'
 											fill='currentColor'
+											style={{
+												color: 'var(--color-text-black)',
+											}}
 											viewBox='0 0 20 20'>
 											<path d='M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z' />
 										</svg>
@@ -108,12 +146,23 @@ const Settings = () => {
 						<div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
 							{/* Email */}
 							<div>
-								<h2 className='text-xl font-bold text-white mb-4'>
+								<h2
+									className='text-xl font-bold mb-4'
+									style={{
+										color: 'var(--color-text-white)',
+									}}>
 									Update Email
 								</h2>
-								<p className='text-gray-300 mb-4 text-sm'>
+								<p
+									className='mb-4 text-sm'
+									style={{
+										color: 'var(--color-text-primary)',
+									}}>
 									Current:{' '}
-									<span className='text-cyan-400'>
+									<span
+										style={{
+											color: 'var(--color-primary)',
+										}}>
 										{user?.email}
 									</span>
 								</p>
@@ -122,18 +171,35 @@ const Settings = () => {
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
 									placeholder='New email'
-									className='w-full bg-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 placeholder-gray-400 mb-4'
+									className='w-full p-3 rounded-lg focus:outline-none focus:ring-2 mb-4'
+									style={
+										{
+											backgroundColor:
+												'var(--color-bg-input)',
+											color: 'var(--color-text-white)',
+											'--tw-ring-color':
+												'var(--color-primary)',
+										} as React.CSSProperties
+									}
 								/>
 								<button
 									onClick={handleEmailUpdate}
-									className='w-full bg-cyan-400 text-gray-900 font-bold py-2 px-4 rounded-lg hover:bg-cyan-300 transition-colors'>
+									className='w-full font-bold py-2 px-4 rounded-lg transition-opacity hover:opacity-90'
+									style={{
+										backgroundColor: 'var(--color-primary)',
+										color: 'var(--color-text-black)',
+									}}>
 									Update Email
 								</button>
 							</div>
 
 							{/* Password */}
 							<div>
-								<h2 className='text-xl font-bold text-white mb-4'>
+								<h2
+									className='text-xl font-bold mb-4'
+									style={{
+										color: 'var(--color-text-white)',
+									}}>
 									Change Password
 								</h2>
 								<input
@@ -143,7 +209,16 @@ const Settings = () => {
 										setCurrentPassword(e.target.value)
 									}
 									placeholder='Current password'
-									className='w-full bg-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 placeholder-gray-400 mb-4'
+									className='w-full p-3 rounded-lg focus:outline-none focus:ring-2 mb-4'
+									style={
+										{
+											backgroundColor:
+												'var(--color-bg-input)',
+											color: 'var(--color-text-white)',
+											'--tw-ring-color':
+												'var(--color-primary)',
+										} as React.CSSProperties
+									}
 								/>
 								<input
 									type='password'
@@ -152,7 +227,16 @@ const Settings = () => {
 										setNewPassword(e.target.value)
 									}
 									placeholder='New password'
-									className='w-full bg-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 placeholder-gray-400 mb-4'
+									className='w-full p-3 rounded-lg focus:outline-none focus:ring-2 mb-4'
+									style={
+										{
+											backgroundColor:
+												'var(--color-bg-input)',
+											color: 'var(--color-text-white)',
+											'--tw-ring-color':
+												'var(--color-primary)',
+										} as React.CSSProperties
+									}
 								/>
 								<input
 									type='password'
@@ -161,11 +245,24 @@ const Settings = () => {
 										setConfirmPassword(e.target.value)
 									}
 									placeholder='Confirm password'
-									className='w-full bg-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 placeholder-gray-400 mb-4'
+									className='w-full p-3 rounded-lg focus:outline-none focus:ring-2 mb-4'
+									style={
+										{
+											backgroundColor:
+												'var(--color-bg-input)',
+											color: 'var(--color-text-white)',
+											'--tw-ring-color':
+												'var(--color-primary)',
+										} as React.CSSProperties
+									}
 								/>
 								<button
 									onClick={handlePasswordUpdate}
-									className='w-full bg-cyan-400 text-gray-900 font-bold py-2 px-4 rounded-lg hover:bg-cyan-300 transition-colors'>
+									className='w-full font-bold py-2 px-4 rounded-lg transition-opacity hover:opacity-90'
+									style={{
+										backgroundColor: 'var(--color-primary)',
+										color: 'var(--color-text-black)',
+									}}>
 									Update Password
 								</button>
 							</div>
@@ -173,6 +270,7 @@ const Settings = () => {
 					</div>
 				</div>
 			</div>
+            </PageTransition>
 		</ProtectedRoute>
 	);
 };

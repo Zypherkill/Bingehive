@@ -3,6 +3,7 @@
 import React from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { useRouter } from 'next/navigation';
+import { PageTransition } from '@/components/PageTransition';
 
 const Login = () => {
 	const { login } = useAuthStore();
@@ -22,22 +23,39 @@ const Login = () => {
 	};
 
 	return (
-		<div className='bg-gray-900 min-h-screen flex items-center justify-center px-4'>
+        <PageTransition>
+		<div
+			className='min-h-screen flex items-center justify-center px-4'
+			style={{ backgroundColor: 'var(--color-bg-dark)' }}>
 			<form
-				className='w-full max-w-lg bg-gray-800 p-10 rounded-lg shadow-xl'
+				className='w-full max-w-lg p-10 rounded-lg shadow-xl'
+				style={{ backgroundColor: 'var(--color-bg-card)' }}
 				onSubmit={handleSubmit}>
-				<h1 className='text-5xl font-bold text-cyan-400 text-center mb-2'>
+				<h1
+					className='text-5xl font-bold text-center mb-2'
+					style={{ color: 'var(--color-primary)' }}>
 					Bingehive
 				</h1>
-				<p className='text-gray-300 text-lg text-center mb-4'>
-					Your personal anime library shared with friends
+				<p
+					className='text-lg text-center mb-4'
+					style={{ color: 'var(--color-text-primary)' }}>
+					Shared anime library for friends
 				</p>
-				<p className='text-gray-400 text-sm text-center mb-8'>
-					Discover, track, and discuss anime together
+				<p
+					className='text-sm text-center mb-8'
+					style={{ color: 'var(--color-text-secondary)' }}>
+					Discover and track anime together
 				</p>
 				<div className='mb-6'>
 					<input
-						className='w-full bg-gray-700 text-white p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 placeholder-gray-400'
+						className='w-full p-4 rounded-lg focus:outline-none focus:ring-2 placeholder-gray-400'
+						style={
+							{
+								backgroundColor: 'var(--color-bg-input)',
+								color: 'var(--color-text-white)',
+								'--tw-ring-color': 'var(--color-primary)',
+							} as React.CSSProperties
+						}
 						type='email'
 						name='email'
 						placeholder='Email'
@@ -46,7 +64,14 @@ const Login = () => {
 				</div>
 				<div className='mb-8'>
 					<input
-						className='w-full bg-gray-700 text-white p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400 placeholder-gray-400'
+						className='w-full p-4 rounded-lg focus:outline-none focus:ring-2 placeholder-gray-400'
+						style={
+							{
+								backgroundColor: 'var(--color-bg-input)',
+								color: 'var(--color-text-white)',
+								'--tw-ring-color': 'var(--color-primary)',
+							} as React.CSSProperties
+						}
 						type='password'
 						name='password'
 						placeholder='Password'
@@ -54,15 +79,24 @@ const Login = () => {
 					/>
 				</div>
 				<button
-					className='w-full bg-cyan-400 text-gray-900 font-bold py-3 px-6 rounded-lg hover:bg-cyan-300 transition-colors text-lg'
+					className='w-full font-bold py-3 px-6 rounded-lg hover:opacity-90 transition-opacity text-lg'
+					style={{
+						backgroundColor: 'var(--color-primary)',
+						color: 'var(--color-text-black)',
+					}}
 					type='submit'>
 					Login
 				</button>
 				{error && (
-					<p className='text-red-500 text-center mt-6'>{error}</p>
+					<p
+						className='text-center mt-6'
+						style={{ color: 'var(--color-danger)' }}>
+						{error}
+					</p>
 				)}
 			</form>
 		</div>
+        </PageTransition>
 	);
 };
 

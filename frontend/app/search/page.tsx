@@ -1,14 +1,19 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
-import { Anime, LibraryEntryFull } from '@/types';
+import { LibraryEntryFull } from '@/types';
 import { addAnime, getLibrary, searchAnime } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { PageTransition } from '@/components/PageTransition';
+import { motion } from 'framer-motion';
+import { useSearchStore } from '@/store/searchStore';
+import { genreMap } from '@/utils/utils';
 
 const Search = () => {
-	const [query, setQuery] = useState('');
-	const [results, setResults] = useState<Anime[]>([]);
+	const { query, setQuery, results, setResults, lastQuery, setLastQuery } =
+		useSearchStore();
 	const [isLoading, setIsLoading] = useState(false);
+	const [displayCount, setDisplayCount] = useState(10);
 
 	const [libraryIds, setLibraryIds] = useState<number[]>([]);
 
@@ -19,12 +24,61 @@ const Search = () => {
 			);
 		});
 	}, []);
+
+	useEffect(() => {
+		const loadAnime = async () => {
+			if (results.length <= 10) {
+				const genreKeys = Object.keys(genreMap);
+				const randomGenre =
+					genreKeys[Math.floor(Math.random() * genreKeys.length)];
+				const choice = genreMap[randomGenre];
+				if (choice) {
+					const data = await searchAnime(
+						undefined,
+						String(choice),
+					);
+					const filtered = data.data
+						.filter((anime) =>
+							['TV', 'Movie', 'OVA', 'Special', 'ONA'].includes(
+								anime.type,
+							),
+						)
+						.filter(
+							(anime, index, self) =>
+								index ===
+								self.findIndex(
+									(a) => a.mal_id === anime.mal_id,
+								),
+						);
+					setResults(filtered);
+					setLastQuery(randomGenre);
+				}
+			}
+		};
+		loadAnime();
+	}, [results, setResults, setLastQuery]);
+
 	const handleSearch = async () => {
+		if (!query) return;
 		setIsLoading(true);
-		const data = await searchAnime(query);
-		const filtered = data.data.filter((anime) =>
-			['TV', 'Movie', 'OVA', 'Special', 'ONA'].includes(anime.type),
-		);
+		setLastQuery(query);
+		setQuery('');
+		setDisplayCount(10);
+
+		const genreId = genreMap[query.toLowerCase()];
+		const data = genreId
+			? await searchAnime(undefined, String(genreId))
+			: await searchAnime(query);
+
+		const filtered = data.data
+			.filter((anime) =>
+				['TV', 'Movie', 'OVA', 'Special', 'ONA'].includes(anime.type),
+			)
+			.filter(
+				(anime, index, self) =>
+					index === self.findIndex((a) => a.mal_id === anime.mal_id),
+			);
+
 		setResults(filtered);
 		setIsLoading(false);
 	};
@@ -41,57 +95,175 @@ const Search = () => {
 
 	return (
 		<ProtectedRoute>
-			<input
-				className='w-full max-w-2xl mx-auto mt-6 p-3 rounded-2xl bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400'
-				type='text'
-				value={query}
-				onChange={(e) => setQuery(e.target.value)}
-				placeholder='Search for anime...'
-				onKeyDown={(e) => {
-					if (e.key === 'Enter') {
-						handleSearch();
-					}
-				}}
-			/>
-			<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6 max-w-7xl mx-auto'>
-				{results.map((anime) => (
-					<div key={anime.mal_id} className='relative cursor-pointer'>
-						{/* Betyg */}
-						<div className='absolute top-2 left-2 bg-black/70 text-yellow-400 text-sm px-2 py-1 rounded flex items-center gap-1'>
-							⭐ {anime.score ?? 'N/A'}
-						</div>
-						{/* Lägg till-knapp */}
-						<button
-							onClick={() =>
-								!libraryIds.includes(anime.mal_id) &&
-								handleAdd(anime.mal_id)
+			<PageTransition>
+				<div className='flex flex-col items-center min-h-screen mt-6'>
+					<input
+						className='w-full max-w-2xl mx-auto mt-6 p-3 rounded-2xl focus:outline-none focus:ring-2'
+						style={
+							{
+								backgroundColor: 'var(--color-bg-card)',
+								color: 'var(--color-text-white)',
+								'--tw-ring-color': 'var(--color-primary)',
+							} as React.CSSProperties
+						}
+						type='text'
+						value={query}
+						onChange={(e) => setQuery(e.target.value)}
+						placeholder='Search for anime...'
+						onKeyDown={(e) => {
+							if (e.key === 'Enter') {
+								handleSearch();
 							}
-							className={`absolute top-2 right-2 rounded-full w-9 h-9 flex items-center justify-center transition-colors
-                            ${libraryIds.includes(anime.mal_id) ? 'bg-cyan-400 text-black cursor-default' : 'bg-black/70 text-white hover:bg-cyan-400'}`}>
-							{libraryIds.includes(anime.mal_id) ? '✓' : '+'}
-						</button>
-						{/* Bild */}
-						<img
-							src={anime.images.jpg.image_url}
-							alt={anime.title}
-							className='w-full h-64 object-cover rounded-lg'
-						/>
-						{/* Info */}
-						<div className='mt-2'>
-							<p className='text-white font-semibold truncate'>
-								{anime.title}
-							</p>
-							<p className='text-cyan-400 text-sm'>
-								{anime.genres
-									.filter((g) => g.name !== 'Award Winning')
-									.slice(0, 2)
-									.map((g) => g.name)
-									.join(' | ')}
-							</p>
-						</div>
+						}}
+					/>
+					{results.length > 0 && (
+						<p
+							className='text-xl font-bold w-full max-w-7xl mx-auto px-6 mb-2'
+							style={{ color: 'var(--color-primary)' }}>
+							Results for:{' '}
+							<span className='text-white font-bold'>
+								{lastQuery}
+							</span>
+						</p>
+					)}
+					<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6 max-w-7xl mx-auto'>
+						{results
+							.map((anime, index) => (
+								<motion.div
+									key={anime.mal_id}
+									className='relative cursor-pointer'
+									initial={{ opacity: 0, y: 10 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ delay: index * 0.1 }}>
+									{/* Betyg */}
+									<div
+										className='absolute top-2 left-2 text-sm px-2 py-1 rounded flex items-center gap-1'
+										style={{
+											backgroundColor: 'rgba(0,0,0,0.7)',
+											color: 'var(--color-accent-warning)',
+										}}>
+										⭐ {anime.score ?? 'N/A'}
+									</div>
+									{/* Lägg till-knapp */}
+									<button
+										onClick={() =>
+											!libraryIds.includes(
+												anime.mal_id,
+											) && handleAdd(anime.mal_id)
+										}
+										className='absolute top-2 right-2 rounded-full w-9 h-9 flex items-center justify-center transition-colors font-bold'
+										style={{
+											backgroundColor:
+												libraryIds.includes(
+													anime.mal_id,
+												)
+													? 'var(--color-primary)'
+													: 'rgba(0,0,0,0.7)',
+											color: libraryIds.includes(
+												anime.mal_id,
+											)
+												? 'var(--color-text-black)'
+												: 'var(--color-text-white)',
+											cursor: libraryIds.includes(
+												anime.mal_id,
+											)
+												? 'default'
+												: 'pointer',
+										}}
+										onMouseEnter={(e) => {
+											if (
+												!libraryIds.includes(
+													anime.mal_id,
+												)
+											) {
+												e.currentTarget.style.backgroundColor =
+													'var(--color-primary)';
+												e.currentTarget.style.color =
+													'var(--color-text-black)';
+											}
+										}}
+										onMouseLeave={(e) => {
+											if (
+												!libraryIds.includes(
+													anime.mal_id,
+												)
+											) {
+												e.currentTarget.style.backgroundColor =
+													'rgba(0,0,0,0.7)';
+												e.currentTarget.style.color =
+													'var(--color-text-white)';
+											}
+										}}>
+										{libraryIds.includes(anime.mal_id)
+											? '✓'
+											: '+'}
+									</button>
+									{/* Bild */}
+									<img
+										src={anime.images.jpg.image_url}
+										alt={anime.title}
+										className='w-full h-64 object-cover rounded-lg'
+									/>
+									{/* Info */}
+									<div
+										className='p-3'
+										style={{
+											backgroundColor:
+												'var(--color-bg-card)',
+											borderRadius: '0 0 0.5rem 0.5rem',
+										}}>
+										<p
+											className='font-semibold truncate'
+											style={{
+												color: 'var(--color-text-white)',
+											}}>
+											{anime.title}
+										</p>
+										<p
+											className='text-sm'
+											style={{
+												color: 'var(--color-primary)',
+											}}>
+											{anime.genres
+												.filter(
+													(g) =>
+														g.name !==
+														'Award Winning',
+												)
+												.slice(0, 2)
+												.map((g) => g.name)
+												.join(' | ')}
+										</p>
+									</div>
+								</motion.div>
+							))
+							.slice(0, displayCount)}
 					</div>
-				))}
-			</div>
+					{results.length > displayCount && (
+						<div className='flex justify-center mt-8 mb-8'>
+							<button
+								onClick={() =>
+									setDisplayCount(
+										Math.min(displayCount + 15, 25),
+									)
+								}
+								className='px-6 py-2 rounded-lg font-semibold transition-colors'
+								style={{
+									backgroundColor: 'var(--color-primary)',
+									color: 'var(--color-text-black)',
+								}}
+								onMouseEnter={(e) => {
+									e.currentTarget.style.opacity = '0.8';
+								}}
+								onMouseLeave={(e) => {
+									e.currentTarget.style.opacity = '1';
+								}}>
+								Load More
+							</button>
+						</div>
+					)}
+				</div>
+			</PageTransition>
 		</ProtectedRoute>
 	);
 };
