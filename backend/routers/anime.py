@@ -5,6 +5,7 @@ from services.anilist_client import get_anime_streaming_links
 from models import Anime
 from database import get_db
 from sqlalchemy.orm import Session
+from services.anime_client import get_anime_details
 
 router = APIRouter(prefix="/anime", tags=["anime"])
 
@@ -28,3 +29,10 @@ async def get_anime_streaming_links_endpoint(anime_id: int, db: Session = Depend
     if links is None:
         raise HTTPException(status_code=503, detail="Could not reach AniList API")
     return links
+
+@router.get("/{anime_id}/details")
+async def get_anime_details_endpoint(anime_id: int, current_user=Depends(get_current_user)):
+    data = await get_anime_details(anime_id)
+    if data is None:
+        raise HTTPException(status_code=503, detail="Could not fetch anime details")
+    return data

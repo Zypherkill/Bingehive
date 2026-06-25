@@ -1,3 +1,5 @@
+import { Anime } from '@/types';
+
 export const statusColor: Record<string, string> = {
 	watching: 'text-cyan-400',
 	plan_to_watch: 'text-yellow-400',
@@ -23,4 +25,11 @@ export const genreMap: Record<string, number> = {
 	mecha: 18,
 	music: 19,
 	psychological: 40,
+};
+
+export const getTitle = (anime: {
+	title: string;
+	title_english?: string | null;
+}): string => {
+	return anime.title_english ?? anime.title;
 };

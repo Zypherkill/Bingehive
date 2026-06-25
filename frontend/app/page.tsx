@@ -6,7 +6,8 @@ import { getLibrary } from '@/lib/api';
 import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import { statusColor } from '@/utils/utils';
 import { PageTransition } from '@/components/PageTransition';
-import {motion} from 'framer-motion';
+import { motion } from 'framer-motion';
+import { getTitle } from '@/utils/utils';
 
 const Home = () => {
 	const [library, setLibrary] = useState<LibraryEntryFull[]>([]);
@@ -53,8 +54,7 @@ const Home = () => {
 	return (
 		<ProtectedRoute>
 			<PageTransition>
-			<div className='flex flex-col items-center min-h-screen mt-6'>
-				{currentlyWatching && (
+				<div className='flex flex-col items-center min-h-screen mt-6'>
 					<div
 						className='relative w-full max-w-7xl rounded-lg overflow-hidden min-h-96'
 						style={{
@@ -73,12 +73,14 @@ const Home = () => {
 							<h2
 								className='text-4xl font-bold mt-2'
 								style={{ color: 'var(--color-text-white)' }}>
-								{currentlyWatching.anime.title}
+								{currentlyWatching
+									? getTitle(currentlyWatching.anime)
+									: 'Nothing selected'}
 							</h2>
 							<p
 								className='mt-2 line-clamp-2'
 								style={{ color: 'var(--color-text-primary)' }}>
-								{currentlyWatching.anime.synopsis ??
+								{currentlyWatching?.anime.synopsis ??
 									'No synopsis available.'}
 							</p>
 							<button
@@ -103,133 +105,140 @@ const Home = () => {
 							</button>
 						</div>
 					</div>
-				)}
-				<div className='flex items-center justify-end w-full max-w-7xl mx-auto px-6 mt-6 mb-4'>
-					<div
-						className='flex rounded-lg p-1 gap-1 overflow-hidden transition-all duration-700'
-						style={{ backgroundColor: 'var(--color-bg-card)' }}>
-						{/* Alltid synliga */}
-						{visibleFilters.map((f) => (
-							<button
-								key={f}
-								onClick={() => setFilter(f)}
-								className='px-4 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap'
-								style={{
-									backgroundColor:
-										filter === f
-											? 'var(--color-primary)'
-											: 'transparent',
-									color:
-										filter === f
-											? 'var(--color-text-black)'
-											: 'var(--color-text-secondary)',
-								}}>
-								{f
-									.replace(/_/g, ' ')
-									.replace(/^\w/, (c) => c.toUpperCase())}
-							</button>
-						))}
+					<div className='flex items-center justify-end w-full max-w-7xl mx-auto px-6 mt-6 mb-4'>
+						<div
+							className='flex rounded-lg p-1 gap-1 overflow-hidden transition-all duration-700'
+							style={{ backgroundColor: 'var(--color-bg-card)' }}>
+							{/* Alltid synliga */}
+							{visibleFilters.map((f) => (
+								<button
+									key={f}
+									onClick={() => setFilter(f)}
+									className='px-4 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap'
+									style={{
+										backgroundColor:
+											filter === f
+												? 'var(--color-primary)'
+												: 'transparent',
+										color:
+											filter === f
+												? 'var(--color-text-black)'
+												: 'var(--color-text-secondary)',
+									}}>
+									{f
+										.replace(/_/g, ' ')
+										.replace(/^\w/, (c) => c.toUpperCase())}
+								</button>
+							))}
 
-						{/* Extra knappar — alltid renderade men gömda */}
-						{extraFilters.map((f) => (
-							<button
-								key={f}
-								onClick={() => setFilter(f)}
-								className='px-4 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-all duration-700'
-								style={{
-									backgroundColor:
-										filter === f
-											? 'var(--color-primary)'
-											: 'transparent',
-									color:
-										filter === f
-											? 'var(--color-text-black)'
-											: 'var(--color-text-secondary)',
-									maxWidth: showAllFilters ? '150px' : '0px',
-									opacity: showAllFilters ? 1 : 0,
-									padding: showAllFilters ? undefined : '0',
-									overflow: 'hidden',
-								}}>
-								{f
-									.replace(/_/g, ' ')
-									.replace(/^\w/, (c) => c.toUpperCase())}
-							</button>
-						))}
+							{/* Extra knappar — alltid renderade men gömda */}
+							{extraFilters.map((f) => (
+								<button
+									key={f}
+									onClick={() => setFilter(f)}
+									className='px-4 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-all duration-700'
+									style={{
+										backgroundColor:
+											filter === f
+												? 'var(--color-primary)'
+												: 'transparent',
+										color:
+											filter === f
+												? 'var(--color-text-black)'
+												: 'var(--color-text-secondary)',
+										maxWidth: showAllFilters
+											? '150px'
+											: '0px',
+										opacity: showAllFilters ? 1 : 0,
+										padding: showAllFilters
+											? undefined
+											: '0',
+										overflow: 'hidden',
+									}}>
+									{f
+										.replace(/_/g, ' ')
+										.replace(/^\w/, (c) => c.toUpperCase())}
+								</button>
+							))}
 
-						<button
-							onClick={() => setShowAllFilters(!showAllFilters)}
-							className='px-3 py-1.5 rounded-md transition-all duration-300'
-							style={{ color: 'var(--color-text-secondary)' }}>
-							{showAllFilters ? (
-								<FaChevronLeft />
-							) : (
-								<FaChevronRight />
-							)}
-						</button>
+							<button
+								onClick={() =>
+									setShowAllFilters(!showAllFilters)
+								}
+								className='px-3 py-1.5 rounded-md transition-all duration-300'
+								style={{
+									color: 'var(--color-text-secondary)',
+								}}>
+								{showAllFilters ? (
+									<FaChevronLeft />
+								) : (
+									<FaChevronRight />
+								)}
+							</button>
+						</div>
 					</div>
-				</div>
-				{isLoading ? (
-					<p style={{ color: 'var(--color-text-white)' }}>
-						Loading...
-					</p>
-				) : filtered.length === 0 ? (
-					<p style={{ color: 'var(--color-text-white)' }}>
-						No anime found.
-					</p>
-				) : (
-					<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6 max-w-7xl mx-auto'>
-						{filtered.map((entry, index) => (
-							<motion.div
-								key={entry.anime_id}
-								className='relative cursor-pointer'
-								initial={{ opacity: 0, y: 10 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: index * 0.1 }}
-							>
-								{/* Betyg */}
-								<div
-									className='absolute top-2 left-2 text-sm px-2 py-1 rounded flex items-center gap-1'
-									style={{
-										backgroundColor: 'rgba(0,0,0,0.7)',
-										color: 'var(--color-accent-warning)',
-									}}>
-									⭐ {entry.anime.mean_score ?? 'N/A'}
-								</div>
-								<img
-									src={
-										entry.anime.image_url ??
-										'/placeholder.png'
-									}
-									alt={entry.anime.title}
-									className='w-full h-64 object-cover rounded-t-2xl'
-								/>
-								<div
-									className='p-3'
-									style={{
-										backgroundColor: 'var(--color-bg-card)',
-										borderRadius: '0 0 0.5rem 0.5rem',
-									}}>
-									<p
-										className='font-semibold truncate'
+					{isLoading ? (
+						<p style={{ color: 'var(--color-text-white)' }}>
+							Loading...
+						</p>
+					) : filtered.length === 0 ? (
+						<p style={{ color: 'var(--color-text-white)' }}>
+							No anime found.
+						</p>
+					) : (
+						<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6 max-w-7xl mx-auto'>
+							{filtered.map((entry, index) => (
+								<motion.div
+									key={entry.anime_id}
+									className='relative cursor-pointer'
+									initial={{ opacity: 0, y: 10 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ delay: index * 0.1 }}>
+									{/* Betyg */}
+									<div
+										className='absolute top-2 left-2 text-sm px-2 py-1 rounded flex items-center gap-1'
 										style={{
-											color: 'var(--color-text-white)',
+											backgroundColor: 'rgba(0,0,0,0.7)',
+											color: 'var(--color-accent-warning)',
 										}}>
-										{entry.anime.title}
-									</p>
-									<p
-										className={`text-sm font-bold capitalize ${statusColor[entry.status]}`}>
-										{entry.status
-											.replace(/_/g, ' ')
-											.replace(/^\w/, (c) =>
-												c.toUpperCase(),
-											)}
-									</p>
-								</div>
-							</motion.div>
-						))}
-					</div>
-				)}
-			</div>
+										⭐ {entry.anime.mean_score ?? 'N/A'}
+									</div>
+									<img
+										src={
+											entry.anime.image_url ??
+											'/placeholder.png'
+										}
+										alt={getTitle(entry.anime)}
+										className='w-full h-64 object-cover rounded-t-2xl'
+									/>
+									<div
+										className='p-3'
+										style={{
+											backgroundColor:
+												'var(--color-bg-card)',
+											borderRadius: '0 0 0.5rem 0.5rem',
+										}}>
+										<p
+											className='font-semibold truncate'
+											style={{
+												color: 'var(--color-text-white)',
+											}}>
+											{getTitle(entry.anime)}
+										</p>
+										<p
+											className={`text-sm font-bold capitalize ${statusColor[entry.status]}`}>
+											{entry.status
+												.replace(/_/g, ' ')
+												.replace(/^\w/, (c) =>
+													c.toUpperCase(),
+												)}
+										</p>
+									</div>
+								</motion.div>
+							))}
+						</div>
+					)}
+				</div>
 			</PageTransition>
 		</ProtectedRoute>
 	);

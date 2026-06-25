@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { PageTransition } from '@/components/PageTransition';
 import { motion } from 'framer-motion';
 import { useSearchStore } from '@/store/searchStore';
-import { genreMap } from '@/utils/utils';
+import { genreMap, getTitle } from '@/utils/utils';
 
 const Search = () => {
 	const { query, setQuery, results, setResults, lastQuery, setLastQuery } =
@@ -25,38 +25,38 @@ const Search = () => {
 		});
 	}, []);
 
-	useEffect(() => {
-		const loadAnime = async () => {
-			if (results.length <= 10) {
-				const genreKeys = Object.keys(genreMap);
-				const randomGenre =
-					genreKeys[Math.floor(Math.random() * genreKeys.length)];
-				const choice = genreMap[randomGenre];
-				if (choice) {
-					const data = await searchAnime(
-						undefined,
-						String(choice),
-					);
-					const filtered = data.data
-						.filter((anime) =>
-							['TV', 'Movie', 'OVA', 'Special', 'ONA'].includes(
-								anime.type,
-							),
-						)
-						.filter(
-							(anime, index, self) =>
-								index ===
-								self.findIndex(
-									(a) => a.mal_id === anime.mal_id,
-								),
-						);
-					setResults(filtered);
-					setLastQuery(randomGenre);
-				}
-			}
-		};
-		loadAnime();
-	}, [results, setResults, setLastQuery]);
+	// useEffect(() => {
+	// 	const loadAnime = async () => {
+	// 		if (results.length <= 10) {
+	// 			const genreKeys = Object.keys(genreMap);
+	// 			const randomGenre =
+	// 				genreKeys[Math.floor(Math.random() * genreKeys.length)];
+	// 			const choice = genreMap[randomGenre];
+	// 			if (choice) {
+	// 				const data = await searchAnime(
+	// 					undefined,
+	// 					String(choice),
+	// 				);
+	// 				const filtered = data.data
+	// 					.filter((anime) =>
+	// 						['TV', 'Movie', 'OVA', 'Special', 'ONA'].includes(
+	// 							anime.type,
+	// 						),
+	// 					)
+	// 					.filter(
+	// 						(anime, index, self) =>
+	// 							index ===
+	// 							self.findIndex(
+	// 								(a) => a.mal_id === anime.mal_id,
+	// 							),
+	// 					);
+	// 				setResults(filtered);
+	// 				setLastQuery(randomGenre);
+	// 			}
+	// 		}
+	// 	};
+	// 	loadAnime();
+	// }, [results, setResults, setLastQuery]);
 
 	const handleSearch = async () => {
 		if (!query) return;
@@ -201,7 +201,7 @@ const Search = () => {
 									{/* Bild */}
 									<img
 										src={anime.images.jpg.image_url}
-										alt={anime.title}
+										alt={getTitle(anime)}
 										className='w-full h-64 object-cover rounded-lg'
 									/>
 									{/* Info */}
@@ -217,7 +217,8 @@ const Search = () => {
 											style={{
 												color: 'var(--color-text-white)',
 											}}>
-											{anime.title}
+											{getTitle(anime)}
+											
 										</p>
 										<p
 											className='text-sm'

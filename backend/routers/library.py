@@ -25,6 +25,7 @@ async def add_anime(request: AddAnimeRequest, db: Session = Depends(get_db), cur
     try:
         id = data["mal_id"]
         title = data["title"]
+        title_english = data.get("title_english");
         image_url = data.get("images", {}).get("jpg", {}).get("image_url")
         synopsis = data.get("synopsis")
         episodes = data.get("episodes")
@@ -35,6 +36,7 @@ async def add_anime(request: AddAnimeRequest, db: Session = Depends(get_db), cur
             anime = Anime(
                 id=id,
                 title=title,
+                title_english=title_english,
                 image_url=image_url,
                 synopsis=synopsis,
                 episodes=episodes,
@@ -79,6 +81,7 @@ def get_library(db: Session = Depends(get_db), current_user=Depends(get_current_
             "anime": {
                 "id": anime.id,
                 "title": anime.title,
+                "title_english": anime.title_english,
                 "image_url": anime.image_url,
                 "synopsis": anime.synopsis,
                 "episodes": anime.episodes,
