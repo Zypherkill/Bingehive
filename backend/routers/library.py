@@ -66,8 +66,27 @@ async def add_anime(request: AddAnimeRequest, db: Session = Depends(get_db), cur
 
 @router.get("/")
 def get_library(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    entries = db.query(LibraryEntry).all()
-    return entries
+    results = db.query(LibraryEntry, Anime).join(Anime, LibraryEntry.anime_id == Anime.id).all()
+    return [
+        {
+            "id": str(entry.id),
+            "anime_id": entry.anime_id,
+            "status": entry.status,
+            "added_by": str(entry.added_by),
+            "updated_by": str(entry.updated_by),
+            "created_at": entry.created_at,
+            "updated_at": entry.updated_at,
+            "anime": {
+                "id": anime.id,
+                "title": anime.title,
+                "image_url": anime.image_url,
+                "synopsis": anime.synopsis,
+                "episodes": anime.episodes,
+                "mean_score": anime.mean_score,
+            }
+        }
+        for entry, anime in results
+    ]
 
 class UpdateStatusRequest(BaseModel):
     status: LibraryStatus

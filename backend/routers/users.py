@@ -72,6 +72,7 @@ async def upload_avatar(file: UploadFile = File(...), db: Session = Depends(get_
     contents = await file.read()
     supabase.storage.from_("avatars").upload(file_name, contents, {"content-type": file.content_type})
     url = supabase.storage.from_("avatars").get_public_url(file_name)
+    print(f"Avatar URL: {url}")
 
     current_user.avatar_url = url
     db.commit()
