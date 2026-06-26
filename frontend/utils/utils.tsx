@@ -8,23 +8,23 @@ export const statusColor: Record<string, string> = {
 	on_hold: 'text-orange-400',
 };
 
-export const genreMap: Record<string, number> = {
-	action: 1,
-	adventure: 2,
-	comedy: 4,
-	mystery: 7,
-	drama: 8,
-	fantasy: 10,
-	horror: 14,
-	romance: 22,
-	'sci-fi': 24,
-	supernatural: 37,
-	'slice of life': 36,
-	sports: 30,
-	thriller: 41,
-	mecha: 18,
-	music: 19,
-	psychological: 40,
+export const genreMap: Record<string, string> = {
+	action: '1',
+	adventure: '2',
+	comedy: '4',
+	mystery: '7',
+	drama: '8',
+	fantasy: '10',
+	horror: '14',
+	romance: '22',
+	'sci-fi': '24',
+	supernatural: '37',
+	'slice of life': '63',
+	sports: '30',
+	thriller: 'thriller',
+	mecha: '18',
+	music: '19',
+	psychological: '40',
 };
 
 export const getTitle = (anime: {

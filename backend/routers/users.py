@@ -78,7 +78,3 @@ async def upload_avatar(file: UploadFile = File(...), db: Session = Depends(get_
     db.commit()
     db.refresh(current_user)
     return current_user
-
-@router.post("/avatar-test")
-async def test_upload(file: UploadFile = File(...)):
-    return {"filename": file.filename, "content_type": file.content_type}

@@ -1,6 +1,8 @@
-import { Anime, LibraryEntryFull, StreamingLink, User } from '../types';
+import { Anime, LibraryEntryFull, StreamingLink, User, UserAnimeData } from '../types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
+//Authentication and user management
 
 function getToken(): string | null {
 	return localStorage.getItem('token');
@@ -31,7 +33,16 @@ function login(email: string, password: string): Promise<{ access_token: string 
 
 function logout(): void {
 	localStorage.removeItem('token');
+	window.location.href = '/login';
 }
+
+function getUserData(animeID: number): Promise<UserAnimeData> {
+	return fetch(`${API_URL}/library/${animeID}/userdata`, {
+		headers: authHeaders(),
+	}).then((res) => res.json());
+}
+
+//Anime and library management
 
 function searchAnime(q?: string, genres?: string): Promise<{ data: Anime[] }> {
     const params = new URLSearchParams();
@@ -70,6 +81,12 @@ function addAnime(mal_id: number): Promise<LibraryEntryFull> {
 	}).then((res) => res.json());
 }
 
+function getAnimeDetails(malId: number): Promise<{ data: Anime }> {
+	return fetch(`${API_URL}/anime/${malId}/details`, {
+		headers: authHeaders(),
+	}).then((res) => res.json());
+}
+
 function addCustomAnime(data: {
 	title: string;
 	synopsis?: string;
@@ -100,6 +117,8 @@ function updateStatus(animeId: number, status: string): Promise<LibraryEntryFull
 		body: JSON.stringify({ status }),
 	}).then((res) => res.json());
 }
+
+//User data management
 
 function updateUserData(
 	animeId: number,
@@ -159,11 +178,13 @@ export {
 	getToken,
 	authHeaders,
 	login,
-    logout,
+	logout,
+	getUserData,
 	searchAnime,
 	getStreamingLinks,
 	getLibrary,
 	addAnime,
+	getAnimeDetails,
 	addCustomAnime,
 	updateStatus,
 	updateUserData,

@@ -1,9 +1,11 @@
 import httpx
 
 
-async def search_anime(query:str, genres: str = None):
+async def search_anime(query: str = None, genres: str = None):
     url = "https://api.jikan.moe/v4/anime"
-    params = {"q": query,}
+    params = {}
+    if query:
+        params["q"] = query
     if genres:
         params["genres"] = genres
 

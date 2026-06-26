@@ -8,6 +8,7 @@ import { PageTransition } from '@/components/PageTransition';
 import { motion } from 'framer-motion';
 import { useSearchStore } from '@/store/searchStore';
 import { genreMap, getTitle } from '@/utils/utils';
+import { useAuthStore } from '@/store/authStore';
 
 const Search = () => {
 	const { query, setQuery, results, setResults, lastQuery, setLastQuery } =
@@ -16,47 +17,44 @@ const Search = () => {
 	const [displayCount, setDisplayCount] = useState(10);
 
 	const [libraryIds, setLibraryIds] = useState<number[]>([]);
+	const { token } = useAuthStore();
 
 	useEffect(() => {
+		if (!token) return;
 		getLibrary().then((data) => {
 			setLibraryIds(
 				data.map((entry: LibraryEntryFull) => entry.anime_id),
 			);
 		});
-	}, []);
+	}, [token]);
 
-	// useEffect(() => {
-	// 	const loadAnime = async () => {
-	// 		if (results.length <= 10) {
-	// 			const genreKeys = Object.keys(genreMap);
-	// 			const randomGenre =
-	// 				genreKeys[Math.floor(Math.random() * genreKeys.length)];
-	// 			const choice = genreMap[randomGenre];
-	// 			if (choice) {
-	// 				const data = await searchAnime(
-	// 					undefined,
-	// 					String(choice),
-	// 				);
-	// 				const filtered = data.data
-	// 					.filter((anime) =>
-	// 						['TV', 'Movie', 'OVA', 'Special', 'ONA'].includes(
-	// 							anime.type,
-	// 						),
-	// 					)
-	// 					.filter(
-	// 						(anime, index, self) =>
-	// 							index ===
-	// 							self.findIndex(
-	// 								(a) => a.mal_id === anime.mal_id,
-	// 							),
-	// 					);
-	// 				setResults(filtered);
-	// 				setLastQuery(randomGenre);
-	// 			}
-	// 		}
-	// 	};
-	// 	loadAnime();
-	// }, [results, setResults, setLastQuery]);
+	useEffect(() => {
+		if (!token) return;
+		if (results.length > 0) return;
+
+		const loadAnime = async () => {
+			const genreKeys = Object.keys(genreMap);
+			const randomGenre =
+				genreKeys[Math.floor(Math.random() * genreKeys.length)];
+			const choice = genreMap[randomGenre];
+			const data = await searchAnime(undefined, String(choice));
+			const filtered = data.data
+				.filter((anime) =>
+					['TV', 'Movie', 'OVA', 'Special', 'ONA'].includes(
+						anime.type,
+					),
+				)
+				.filter(
+					(anime, index, self) =>
+						index ===
+						self.findIndex((a) => a.mal_id === anime.mal_id),
+				);
+			setResults(filtered);
+			setLastQuery(randomGenre);
+		};
+
+		loadAnime();
+	}, [token]);
 
 	const handleSearch = async () => {
 		if (!query) return;
@@ -96,9 +94,10 @@ const Search = () => {
 	return (
 		<ProtectedRoute>
 			<PageTransition>
-				<div className='flex flex-col items-center min-h-screen mt-6'>
+				<div className='flex flex-col items-center min-h-screen mt-0 md:mt-6'>
+					<div className='flex align-center w-full px-4 md:px-0 mt-1'>
 					<input
-						className='w-full max-w-2xl mx-auto mt-6 p-3 rounded-2xl focus:outline-none focus:ring-2'
+						className='w-full max-w-2xl mx-auto p-3 rounded-2xl focus:outline-none focus:ring-2'
 						style={
 							{
 								backgroundColor: 'var(--color-bg-card)',
@@ -115,10 +114,11 @@ const Search = () => {
 								handleSearch();
 							}
 						}}
-					/>
+						/>
+						</div>
 					{results.length > 0 && (
 						<p
-							className='text-xl font-bold w-full max-w-7xl mx-auto px-6 mb-2'
+							className='text-xl font-bold w-full max-w-7xl mx-auto px-6 mb-0 mt-4 md:mt-4'
 							style={{ color: 'var(--color-primary)' }}>
 							Results for:{' '}
 							<span className='text-white font-bold'>
@@ -218,7 +218,6 @@ const Search = () => {
 												color: 'var(--color-text-white)',
 											}}>
 											{getTitle(anime)}
-											
 										</p>
 										<p
 											className='text-sm'

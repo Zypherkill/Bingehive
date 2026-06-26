@@ -23,7 +23,6 @@ const Login = () => {
 	};
 
 	return (
-        <PageTransition>
 		<div
 			className='min-h-screen flex items-center justify-center px-4'
 			style={{ backgroundColor: 'var(--color-bg-dark)' }}>
@@ -31,11 +30,18 @@ const Login = () => {
 				className='w-full max-w-lg p-10 rounded-lg shadow-xl'
 				style={{ backgroundColor: 'var(--color-bg-card)' }}
 				onSubmit={handleSubmit}>
-				<h1
-					className='text-5xl font-bold text-center mb-2'
-					style={{ color: 'var(--color-primary)' }}>
-					Bingehive
-				</h1>
+				<div className='flex justify-center items-center gap-1 mb-4'>
+					<h1
+						className='text-5xl font-bold'
+						style={{ color: 'var(--color-primary)' }}>
+						Bingehive
+					</h1>
+					<img
+						src='bingehive_logo.png'
+						alt='Bingehive Logo'
+						className='w-20 h-auto'
+					/>
+				</div>
 				<p
 					className='text-lg text-center mb-4'
 					style={{ color: 'var(--color-text-primary)' }}>
@@ -96,7 +102,6 @@ const Login = () => {
 				)}
 			</form>
 		</div>
-        </PageTransition>
 	);
 };
 

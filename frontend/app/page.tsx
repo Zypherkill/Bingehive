@@ -8,12 +8,14 @@ import { statusColor } from '@/utils/utils';
 import { PageTransition } from '@/components/PageTransition';
 import { motion } from 'framer-motion';
 import { getTitle } from '@/utils/utils';
+import { useAuthStore } from '@/store/authStore';
 
 const Home = () => {
 	const [library, setLibrary] = useState<LibraryEntryFull[]>([]);
 	const [filter, setFilter] = useState<LibraryStatus | 'all'>('all');
 	const [isLoading, setIsLoading] = useState(true);
 	const [showAllFilters, setShowAllFilters] = useState(false);
+	const {token} = useAuthStore();
 
 	const visibleFilters: (LibraryStatus | 'all')[] = [
 		'all',
@@ -27,11 +29,12 @@ const Home = () => {
 	];
 
 	useEffect(() => {
+		if(!token) return;
 		getLibrary().then((data) => {
 			setLibrary(data);
 			setIsLoading(false);
 		});
-	}, []);
+	}, [token]);
 
 	const statusOrder: Record<string, number> = {
 		watching: 0,
@@ -54,7 +57,7 @@ const Home = () => {
 	return (
 		<ProtectedRoute>
 			<PageTransition>
-				<div className='flex flex-col items-center min-h-screen mt-6'>
+				<div className='flex flex-col items-center min-h-screen mt-0 md:mt-6'>
 					<div
 						className='relative w-full max-w-7xl rounded-lg overflow-hidden min-h-96'
 						style={{
@@ -107,7 +110,7 @@ const Home = () => {
 					</div>
 					<div className='flex items-center justify-end w-full max-w-7xl mx-auto px-6 mt-6 mb-4'>
 						<div
-							className='flex rounded-lg p-1 gap-1 overflow-hidden transition-all duration-700'
+							className='flex rounded-lg gap-1 overflow-hidden transition-all duration-700'
 							style={{ backgroundColor: 'var(--color-bg-card)' }}>
 							{/* Alltid synliga */}
 							{visibleFilters.map((f) => (
@@ -209,14 +212,13 @@ const Home = () => {
 											'/placeholder.png'
 										}
 										alt={getTitle(entry.anime)}
-										className='w-full h-64 object-cover rounded-t-2xl'
+										className='w-full h-64 object-cover rounded-t-md'
 									/>
 									<div
-										className='p-3'
+										className='p-3 rounded-b-md'
 										style={{
 											backgroundColor:
-												'var(--color-bg-card)',
-											borderRadius: '0 0 0.5rem 0.5rem',
+												'var(--color-bg-card)'
 										}}>
 										<p
 											className='font-semibold truncate'

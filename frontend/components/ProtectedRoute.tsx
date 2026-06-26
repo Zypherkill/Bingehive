@@ -9,16 +9,16 @@ interface Props {
 }
 
 export const ProtectedRoute: React.FC<Props> = ({ children }) => {
-	const { user, isLoading } = useAuthStore();
+	const {isLoading, user,isInitialized } = useAuthStore();
 	const router = useRouter();
 
 	useEffect(() => {
-		if (!isLoading && !user) {
+		if (isInitialized && !user) {
 			router.push('/login');
 		}
-	}, [isLoading, user, router]);
+	}, [isInitialized, user, router]);
 
-	if (isLoading || !user) {
+	if (!isInitialized || isLoading) {
 		return <p>Loading...</p>;
 	}
 

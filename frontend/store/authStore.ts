@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { User } from '@/types';
-import { getMe, login as apiLogin, logout as apiLogout } from '@/lib/api';
+import { getMe, login as apiLogin, logout as apiLogout } from '@/lib/api'
 
 interface AuthStore {
 	user: User | null;
 	token: string | null;
 	isLoading: boolean;
+	isInitialized: boolean;
 	login: (email: string, password: string) => Promise<void>;
 	logout: () => void;
 	fetchUser: () => Promise<void>;
@@ -18,6 +19,7 @@ export const useAuthStore = create<AuthStore>()(
 			user: null,
 			token: null,
 			isLoading: false,
+			isInitialized: false,
 			login: async (email, password) => {
 				set({ isLoading: true });
 				try {
@@ -31,13 +33,15 @@ export const useAuthStore = create<AuthStore>()(
 			},
 			logout: () => {
 				apiLogout();
-				set({ user: null, token: null });
+				set({ user: null, token: null, isInitialized: false });
 			},
 			fetchUser: async () => {
 				set({ isLoading: true });
 				try {
 					const user = await getMe();
-					set({ user });
+					set({ user, isInitialized: true });
+				} catch {
+					set({ isInitialized: true });
 				} finally {
 					set({ isLoading: false });
 				}

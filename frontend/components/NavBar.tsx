@@ -3,25 +3,38 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../store/authStore';
 import React from 'react';
+import { useRouter } from 'next/navigation';
+import { url } from 'inspector';
 
 export const NavBar = () => {
 	const { user, logout } = useAuthStore();
 	const pathname = usePathname();
+	const router = useRouter();
 	if (pathname === '/login') return null;
 	const isActive = (path: string) => pathname === path;
 
+	const handleLogout = () => {
+		router.push('/login');
+		setTimeout(logout, 50);
+	};
+
 	return (
 		<nav
-			className='p-4 grid grid-cols-3 gap-4 sticky top-0 z-50'
+			className='p-4 flex justify-between sticky top-0 z-50 md:grid-cols-3 md:grid'
 			style={{ backgroundColor: 'var(--color-bg-dark)' }}>
-			<div className='flex justify-center items-center'>
+			<div className='flex justify-center items-center gap-1'>
 				<h1
 					className='text-2xl font-bold'
 					style={{ color: 'var(--color-primary)' }}>
 					Bingehive
 				</h1>
+			<img
+				src='bingehive_logo.png'
+				alt='Bingehive Logo'
+				className='w-9 h-9'
+			/>
 			</div>
-			<ul className='flex gap-4 justify-center items-center'>
+			<ul className='hidden md:flex gap-4 justify-center items-center'>
 				<Link
 					href='/'
 					className={`${isActive('/') ? 'font-bold border-b-2 pb-1' : ''}`}
@@ -52,7 +65,7 @@ export const NavBar = () => {
 					Add
 				</Link>
 			</ul>
-			<div className='flex justify-center items-center gap-4'>
+			<div className='flex justify-center items-center gap-4 col-3'>
 				<Link href='/settings'>
 					{user?.avatar_url ? (
 						<img
@@ -78,7 +91,7 @@ export const NavBar = () => {
 					)}
 				</Link>
 				<button
-					onClick={logout}
+					onClick={handleLogout}
 					className='hover:opacity-80 transition-opacity'
 					style={{ color: 'var(--color-primary)' }}
 					title='Logout'>
