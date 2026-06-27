@@ -211,7 +211,7 @@ const Home = () => {
 								)}
 							</button>
 						</div>
-						<div className='md:hidden relative w-full flex justify-end mt-4 px-6'>
+						<div className='md:hidden relative w-full flex justify-end mt-4'>
 							<button
 								onClick={() => setDropdownOpen(!dropdownOpen)}
 								className='flex items-center justify-around px-4 py-2 rounded-lg text-sm font-medium transition-colors w-30'
@@ -236,7 +236,7 @@ const Home = () => {
 										animate={{ opacity: 1, y: 0 }}
 										exit={{ opacity: 0, y: -10 }}
 										transition={{ duration: 0.2 }}
-										className='absolute top-full mt-0.5 right-6 rounded-lg overflow-hidden z-50 w-30'
+										className='absolute top-full mt-0.5 rounded-lg overflow-hidden z-50 w-30'
 										style={{
 											backgroundColor:
 												'var(--color-bg-card)',
