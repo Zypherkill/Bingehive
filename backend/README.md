@@ -19,6 +19,20 @@ A REST API built with FastAPI and Python. Handles authentication, anime search v
 
 ---
 
+## External APIs
+
+**MyAnimeList API**
+- Base URL: `https://api.myanimelist.net/v2`
+- Requires `X-MAL-CLIENT-ID` header
+- Used for: search, popular anime, anime details
+
+**AniList API**
+- Base URL: `https://graphql.anilist.co`
+- No API key required, GraphQL
+- Used for: streaming service links per anime
+
+---
+
 ## Project Structure
 
 ```
@@ -199,17 +213,3 @@ Valid values: `watching` `completed` `plan_to_watch` `dropped` `on_hold`
 **Password requirements:** min 8 characters, one uppercase letter, one number.
 
 **Avatar:** JPEG, PNG or WebP, max 2MB. Stored in Supabase Storage.
-
----
-
-## External APIs
-
-**MyAnimeList API**
-- Base URL: `https://api.myanimelist.net/v2`
-- Requires `X-MAL-CLIENT-ID` header
-- Used for: search, popular anime, anime details
-
-**AniList API**
-- Base URL: `https://graphql.anilist.co`
-- No API key required, GraphQL
-- Used for: streaming service links per anime
