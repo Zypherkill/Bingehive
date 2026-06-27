@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { LibraryEntryFull, LibraryStatus } from '@/types';
 import { ProtectedRoute } from '../components/ProtectedRoute';
-import { getLibrary } from '@/lib/api';
-import { FaChevronRight, FaChevronLeft, FaChevronDown } from 'react-icons/fa';
+import { getLibrary, deleteAnime } from '@/lib/api';
+import { FaChevronRight, FaChevronLeft, FaChevronDown, FaTrash } from 'react-icons/fa';
 import { statusColor } from '@/utils/utils';
 import { PageTransition } from '@/components/PageTransition';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -60,6 +60,17 @@ const Home = () => {
 	const currentlyWatching = library.find(
 		(entry) => entry.status === 'watching',
 	);
+
+	const handleDelete = async (animeId: number) => {
+		try {
+			await deleteAnime(animeId);
+			setLibrary((prevLibrary) =>
+				prevLibrary.filter((entry) => entry.anime.id !== animeId),
+			);
+		} catch (error) {
+			console.error('Failed to delete anime:', error);
+		}
+	};
 
 	return (
 		<ProtectedRoute>
@@ -274,13 +285,26 @@ const Home = () => {
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: index * 0.1 }}>
 									{/* Betyg */}
-									<div
-										className='absolute top-2 left-2 text-sm px-2 py-1 rounded flex items-center gap-1'
-										style={{
-											backgroundColor: 'rgba(0,0,0,0.7)',
-											color: 'var(--color-accent-warning)',
-										}}>
-										⭐ {entry.anime.mean_score ?? 'N/A'}
+									<div className='w-full absolute top-2 text-sm rounded flex items-center justify-between'>
+										<div
+											className='flex items-center gap-1 px-2 py-1 rounded'
+											style={{
+												backgroundColor:
+													'rgba(0,0,0,0.7)',
+												color: 'var(--color-accent-warning)',
+											}}>
+											⭐ {entry.anime.mean_score ?? 'N/A'}
+										</div>
+										<div
+											onClick={() => handleDelete(entry.anime_id)}
+											className='flex items-center gap-1 px-2 py-1 rounded'
+											style={{
+												backgroundColor:
+													'rgba(0,0,0,0.7)',
+												color: 'var(--color-danger)',
+											}}>
+											Remove
+										</div>
 									</div>
 									<img
 										src={
@@ -301,7 +325,8 @@ const Home = () => {
 											style={{
 												color: 'var(--color-text-white)',
 											}}>
-											{getTitle(entry.anime) || 'Title missing'}
+											{getTitle(entry.anime) ||
+												'Title missing'}
 										</p>
 										<p
 											className={`text-sm font-bold capitalize ${statusColor[entry.status]}`}>
