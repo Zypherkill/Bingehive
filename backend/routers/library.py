@@ -20,23 +20,23 @@ async def add_anime(request: AddAnimeRequest, db: Session = Depends(get_db), cur
     anime_data = await get_anime_details(request.mal_id)
     if anime_data is None:
         raise HTTPException(status_code=503, detail="Could not fetch anime data from Jikan")
-    data = anime_data["data"]
+
 
     try:
-        id = data["mal_id"]
-        title = data["title"]
-        title_english = data.get("title_english");
-        image_url = data.get("images", {}).get("jpg", {}).get("image_url")
-        synopsis = data.get("synopsis")
-        episodes = data.get("episodes")
-        mean_score = data.get("score")
+        id = anime_data["id"]
+        title = anime_data["title"]
+        title_en = anime_data.get("alternative_titles", {}).get("en")
+        image_url = anime_data.get("main_picture", {}).get("medium")
+        synopsis = anime_data.get("synopsis")
+        episodes = anime_data.get("num_episodes")
+        mean_score = anime_data.get("mean")
 
         anime = db.query(Anime).filter(Anime.id == request.mal_id).first()
         if not anime:
             anime = Anime(
                 id=id,
                 title=title,
-                title_english=title_english,
+                title_en=title_en,
                 image_url=image_url,
                 synopsis=synopsis,
                 episodes=episodes,
@@ -81,7 +81,7 @@ def get_library(db: Session = Depends(get_db), current_user=Depends(get_current_
             "anime": {
                 "id": anime.id,
                 "title": anime.title,
-                "title_english": anime.title_english,
+                "title_en": anime.title_en,
                 "image_url": anime.image_url,
                 "synopsis": anime.synopsis,
                 "episodes": anime.episodes,
@@ -129,14 +129,6 @@ def update_user_data(anime_id: int, request: UserDataRequest, db: Session = Depe
     db.commit()
     db.refresh(user_data)
     return user_data
-
-@router.get("/{anime_id}/userdata")
-def get_user_data(anime_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    data = db.query(UserAnimeData).filter(
-        UserAnimeData.anime_id == anime_id,
-        UserAnimeData.user_id == current_user.id
-    ).first()
-    return data
 
 @router.delete("/{anime_id}")
 def remove_anime(anime_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):

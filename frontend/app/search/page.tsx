@@ -1,13 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
-import { LibraryEntryFull } from '@/types';
-import { addAnime, getLibrary, searchAnime } from '@/lib/api';
+import { Anime, LibraryEntryFull } from '@/types';
+import { addAnime, getLibrary, getPopularAnime, searchAnime } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { PageTransition } from '@/components/PageTransition';
 import { motion } from 'framer-motion';
 import { useSearchStore } from '@/store/searchStore';
-import { genreMap, getTitle } from '@/utils/utils';
+import { getTitle } from '@/utils/utils';
 import { useAuthStore } from '@/store/authStore';
 
 const Search = () => {
@@ -32,28 +32,14 @@ const Search = () => {
 		if (!token) return;
 		if (results.length > 0) return;
 
-		const loadAnime = async () => {
-			const genreKeys = Object.keys(genreMap);
-			const randomGenre =
-				genreKeys[Math.floor(Math.random() * genreKeys.length)];
-			const choice = genreMap[randomGenre];
-			const data = await searchAnime(undefined, String(choice));
-			const filtered = data.data
-				.filter((anime) =>
-					['TV', 'Movie', 'OVA', 'Special', 'ONA'].includes(
-						anime.type,
-					),
-				)
-				.filter(
-					(anime, index, self) =>
-						index ===
-						self.findIndex((a) => a.mal_id === anime.mal_id),
-				);
-			setResults(filtered);
-			setLastQuery(randomGenre);
-		};
-
-		loadAnime();
+		getPopularAnime().then((data) => {
+			const animeList = data.data.map((item: { node: Anime }) => ({
+				...item.node,
+				title_en: item.node.alternative_titles?.en ?? null,
+			}));
+			setResults(animeList);
+			setLastQuery('Popular');
+		});
 	}, [token]);
 
 	const handleSearch = async () => {
@@ -63,18 +49,20 @@ const Search = () => {
 		setQuery('');
 		setDisplayCount(10);
 
-		const genreId = genreMap[query.toLowerCase()];
-		const data = genreId
-			? await searchAnime(undefined, String(genreId))
-			: await searchAnime(query);
-
-		const filtered = data.data
-			.filter((anime) =>
-				['TV', 'Movie', 'OVA', 'Special', 'ONA'].includes(anime.type),
+		const data = await searchAnime(query);
+		const animeList = data.data.map((item: { node: Anime }) => ({
+			...item.node,
+			title_en: item.node.alternative_titles?.en ?? null,
+		}));
+		const filtered = animeList
+			.filter((anime: Anime) =>
+				['tv', 'movie', 'ova', 'special', 'ona'].includes(
+					anime.media_type ?? '',
+				),
 			)
 			.filter(
-				(anime, index, self) =>
-					index === self.findIndex((a) => a.mal_id === anime.mal_id),
+				(anime: Anime, index: number, self: Anime[]) =>
+					index === self.findIndex((a) => a.id === anime.id),
 			);
 
 		setResults(filtered);
@@ -96,26 +84,26 @@ const Search = () => {
 			<PageTransition>
 				<div className='flex flex-col items-center min-h-screen mt-0 md:mt-6'>
 					<div className='flex align-center w-full px-4 md:px-0 mt-1'>
-					<input
-						className='w-full max-w-2xl mx-auto p-3 rounded-2xl focus:outline-none focus:ring-2'
-						style={
-							{
-								backgroundColor: 'var(--color-bg-card)',
-								color: 'var(--color-text-white)',
-								'--tw-ring-color': 'var(--color-primary)',
-							} as React.CSSProperties
-						}
-						type='text'
-						value={query}
-						onChange={(e) => setQuery(e.target.value)}
-						placeholder='Search for anime...'
-						onKeyDown={(e) => {
-							if (e.key === 'Enter') {
-								handleSearch();
+						<input
+							className='w-full max-w-2xl mx-auto p-3 rounded-2xl focus:outline-none focus:ring-2'
+							style={
+								{
+									backgroundColor: 'var(--color-bg-card)',
+									color: 'var(--color-text-white)',
+									'--tw-ring-color': 'var(--color-primary)',
+								} as React.CSSProperties
 							}
-						}}
+							type='text'
+							value={query}
+							onChange={(e) => setQuery(e.target.value)}
+							placeholder='Search for anime...'
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') {
+									handleSearch();
+								}
+							}}
 						/>
-						</div>
+					</div>
 					{results.length > 0 && (
 						<p
 							className='text-xl font-bold w-full max-w-7xl mx-auto px-6 mb-0 mt-4 md:mt-4'
@@ -130,7 +118,7 @@ const Search = () => {
 						{results
 							.map((anime, index) => (
 								<motion.div
-									key={anime.mal_id}
+									key={anime.id}
 									className='relative cursor-pointer'
 									initial={{ opacity: 0, y: 10 }}
 									animate={{ opacity: 1, y: 0 }}
@@ -142,39 +130,32 @@ const Search = () => {
 											backgroundColor: 'rgba(0,0,0,0.7)',
 											color: 'var(--color-accent-warning)',
 										}}>
-										⭐ {anime.score ?? 'N/A'}
+										⭐ {anime.mean ?? 'N/A'}
 									</div>
 									{/* Lägg till-knapp */}
 									<button
 										onClick={() =>
-											!libraryIds.includes(
-												anime.mal_id,
-											) && handleAdd(anime.mal_id)
+											!libraryIds.includes(anime.id) &&
+											handleAdd(anime.id)
 										}
 										className='absolute top-2 right-2 rounded-full w-9 h-9 flex items-center justify-center transition-colors font-bold'
 										style={{
 											backgroundColor:
-												libraryIds.includes(
-													anime.mal_id,
-												)
+												libraryIds.includes(anime.id)
 													? 'var(--color-primary)'
 													: 'rgba(0,0,0,0.7)',
-											color: libraryIds.includes(
-												anime.mal_id,
-											)
+											color: libraryIds.includes(anime.id)
 												? 'var(--color-text-black)'
 												: 'var(--color-text-white)',
 											cursor: libraryIds.includes(
-												anime.mal_id,
+												anime.id,
 											)
 												? 'default'
 												: 'pointer',
 										}}
 										onMouseEnter={(e) => {
 											if (
-												!libraryIds.includes(
-													anime.mal_id,
-												)
+												!libraryIds.includes(anime.id)
 											) {
 												e.currentTarget.style.backgroundColor =
 													'var(--color-primary)';
@@ -184,9 +165,7 @@ const Search = () => {
 										}}
 										onMouseLeave={(e) => {
 											if (
-												!libraryIds.includes(
-													anime.mal_id,
-												)
+												!libraryIds.includes(anime.id)
 											) {
 												e.currentTarget.style.backgroundColor =
 													'rgba(0,0,0,0.7)';
@@ -194,19 +173,19 @@ const Search = () => {
 													'var(--color-text-white)';
 											}
 										}}>
-										{libraryIds.includes(anime.mal_id)
+										{libraryIds.includes(anime.id)
 											? '✓'
 											: '+'}
 									</button>
 									{/* Bild */}
 									<img
-										src={anime.images.jpg.image_url}
+										src={anime.main_picture?.medium}
 										alt={getTitle(anime)}
 										className='w-full h-64 object-cover rounded-lg'
 									/>
 									{/* Info */}
 									<div
-										className='p-3'
+										className='p-3 min-h-16'
 										style={{
 											backgroundColor:
 												'var(--color-bg-card)',

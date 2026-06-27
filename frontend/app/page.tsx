@@ -11,11 +11,11 @@ import { getTitle } from '@/utils/utils';
 import { useAuthStore } from '@/store/authStore';
 
 const Home = () => {
+	const {token} = useAuthStore();
 	const [library, setLibrary] = useState<LibraryEntryFull[]>([]);
 	const [filter, setFilter] = useState<LibraryStatus | 'all'>('all');
 	const [isLoading, setIsLoading] = useState(true);
 	const [showAllFilters, setShowAllFilters] = useState(false);
-	const {token} = useAuthStore();
 
 	const visibleFilters: (LibraryStatus | 'all')[] = [
 		'all',
@@ -31,7 +31,7 @@ const Home = () => {
 	useEffect(() => {
 		if(!token) return;
 		getLibrary().then((data) => {
-			setLibrary(data);
+			setLibrary(data ?? []);
 			setIsLoading(false);
 		});
 	}, [token]);
@@ -215,7 +215,7 @@ const Home = () => {
 										className='w-full h-64 object-cover rounded-t-md'
 									/>
 									<div
-										className='p-3 rounded-b-md'
+										className='p-3 rounded-b-md min-h-16'
 										style={{
 											backgroundColor:
 												'var(--color-bg-card)'

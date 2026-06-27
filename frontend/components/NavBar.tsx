@@ -79,7 +79,7 @@ export const NavBar = () => {
 								backgroundColor: 'var(--color-bg-secondary)',
 								color: 'var(--color-text-white)',
 							}}>
-							{user.username[0].toUpperCase()}
+							{user?.username?.[0].toUpperCase()}
 						</div>
 					) : (
 						<div

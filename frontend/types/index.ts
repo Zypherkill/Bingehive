@@ -7,33 +7,26 @@ export interface User {
 }
 
 export interface Anime {
-	mal_id: number;
+	id: number;
 	title: string;
-	title_english: string | null;
-	images: {
-		jpg: {
-			image_url: string;
-		};
-	};
+	alternative_titles: {
+		en: string | null;
+		ja: string | null;
+		synonyms: string[];
+	} | null;
+	main_picture: {
+		medium: string;
+		large: string;
+	} | null;
 	synopsis: string | null;
-	episodes: number;
-	score: number | null;
-	genres: {
-		mal_id: number;
-		name: string;
-	}[];
-	status: string;
-	aired: string;
-	studios: {
-		mal_id: number;
-		name: string;
-	}[];
-	type: string;
-	rank: number;
-	favorites: number;
-	members: number;
-	season: number;
-	year: number;
+	num_episodes: number | null;
+	mean: number | null;
+	rank: number | null;
+	genres: { id: number; name: string }[];
+	status: string | null;
+	start_date: string | null;
+	studios: { id: number; name: string }[];
+	media_type: string | null;
 }
 
 export interface LibraryEntryFull {
@@ -47,6 +40,7 @@ export interface LibraryEntryFull {
 	anime: {
 		id: number;
 		title: string;
+		title_en: string | null;
 		image_url: string | null;
 		synopsis: string | null;
 		episodes: number | null;

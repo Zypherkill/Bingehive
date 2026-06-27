@@ -28,12 +28,14 @@ function login(email: string, password: string): Promise<{ access_token: string 
 		method: 'POST',
 		headers: authHeaders(),
 		body: JSON.stringify({ email, password }),
-	}).then((res) => res.json());
+	}).then((res) => {
+		if (!res.ok) throw new Error('Invalid credentials');
+		return res.json();
+	});
 }
 
 function logout(): void {
 	localStorage.removeItem('token');
-	window.location.href = '/login';
 }
 
 function getUserData(animeID: number): Promise<UserAnimeData> {
@@ -44,17 +46,16 @@ function getUserData(animeID: number): Promise<UserAnimeData> {
 
 //Anime and library management
 
-function searchAnime(q?: string, genres?: string): Promise<{ data: Anime[] }> {
-    const params = new URLSearchParams();
-    if (q) params.append('q', q);
-    if (genres) params.append('genres', genres);
-    
-    return fetch(`${API_URL}/anime/search?${params.toString()}`, {
-        headers: authHeaders(),
-    }).then((res) => res.json());
+function searchAnime(q?: string): Promise<{ data: { node: Anime }[] }> {
+	const params = new URLSearchParams();
+	if (q) params.append('q', q);
+
+	return fetch(`${API_URL}/anime/search?${params.toString()}`, {
+		headers: authHeaders(),
+	}).then((res) => res.json());
 }
 
-export function deleteAnime(animeId: number): Promise<{ detail: string }> {
+function deleteAnime(animeId: number): Promise<{ detail: string }> {
 	return fetch(`${API_URL}/library/${animeId}`, {
 		method: 'DELETE',
 		headers: authHeaders(),
@@ -83,6 +84,12 @@ function addAnime(mal_id: number): Promise<LibraryEntryFull> {
 
 function getAnimeDetails(malId: number): Promise<{ data: Anime }> {
 	return fetch(`${API_URL}/anime/${malId}/details`, {
+		headers: authHeaders(),
+	}).then((res) => res.json());
+}
+
+function getPopularAnime(): Promise<{ data: { node: Anime }[] }> {
+	return fetch(`${API_URL}/anime/popular`, {
 		headers: authHeaders(),
 	}).then((res) => res.json());
 }
@@ -181,6 +188,8 @@ export {
 	logout,
 	getUserData,
 	searchAnime,
+	deleteAnime,
+	getPopularAnime,
 	getStreamingLinks,
 	getLibrary,
 	addAnime,

@@ -44,7 +44,10 @@ export default function RootLayout({
 				<NavBar />
 				<NavBarMobile />
 				<BackToTop />
-				<Toaster position='bottom-right' />
+				<Toaster
+					position='bottom-center'
+					containerStyle={{ bottom: '8rem' }}
+				/>
 				<div className='flex-1'>{children}</div>
 				<Footer />
 			</body>

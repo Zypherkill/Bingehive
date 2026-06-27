@@ -21,7 +21,7 @@ class Anime(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False)
-    title_english = Column(String)
+    title_en = Column(String, nullable=True)
     image_url = Column(String)
     synopsis = Column(Text)
     episodes = Column(Integer)
