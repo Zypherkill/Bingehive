@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react';
 import { LibraryEntryFull, LibraryStatus } from '@/types';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { getLibrary } from '@/lib/api';
-import { FaChevronRight, FaChevronLeft } from 'react-icons/fa';
+import { FaChevronRight, FaChevronLeft, FaChevronDown } from 'react-icons/fa';
 import { statusColor } from '@/utils/utils';
 import { PageTransition } from '@/components/PageTransition';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { getTitle } from '@/utils/utils';
 import { useAuthStore } from '@/store/authStore';
 
@@ -16,6 +16,7 @@ const Home = () => {
 	const [filter, setFilter] = useState<LibraryStatus | 'all'>('all');
 	const [isLoading, setIsLoading] = useState(true);
 	const [showAllFilters, setShowAllFilters] = useState(false);
+	const [dropdownOpen, setDropdownOpen] = useState(false);
 
 	const visibleFilters: (LibraryStatus | 'all')[] = [
 		'all',
@@ -108,16 +109,21 @@ const Home = () => {
 							</button>
 						</div>
 					</div>
-					<div className='flex items-center justify-end w-full max-w-7xl mx-auto px-6 mt-6 mb-4'>
+					<div className='flex items-center justify-between gap-10 w-full max-w-7xl mt-0 md:mt-6'>
+						<h1 className='text-2xl font-bold ml-6 md:ml-0'
+							style={{ color: 'var(--color-text-white)' }}>
+							Library
+						</h1>
+
 						<div
-							className='flex rounded-lg gap-1 overflow-hidden transition-all duration-700'
+							className=' hidden md:flex rounded-lg gap-1 overflow-hidden transition-all duration-700'
 							style={{ backgroundColor: 'var(--color-bg-card)' }}>
 							{/* Alltid synliga */}
 							{visibleFilters.map((f) => (
 								<button
 									key={f}
 									onClick={() => setFilter(f)}
-									className='px-4 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap'
+									className='px-4 py-1.5 rounded-md text-sm font-lg transition-colors whitespace-nowrap'
 									style={{
 										backgroundColor:
 											filter === f
@@ -179,7 +185,70 @@ const Home = () => {
 								)}
 							</button>
 						</div>
+						<div className='md:hidden relative w-full flex justify-end mt-4 px-6'>
+							<button
+								onClick={() => setDropdownOpen(!dropdownOpen)}
+								className='flex items-center justify-around px-4 py-2 rounded-lg text-sm font-medium transition-colors w-30'
+								style={{
+									backgroundColor: 'var(--color-bg-card)',
+									color: 'var(--color-text-secondary)',
+								}}>
+								{filter
+									.replace(/_/g, ' ')
+									.replace(/^\w/, (c) => c.toUpperCase())}
+								<motion.div
+									animate={{ rotate: dropdownOpen ? 180 : 0 }}
+									transition={{ duration: 0.2 }}>
+									<FaChevronDown size={12} />
+								</motion.div>
+							</button>
+
+							<AnimatePresence>
+								{dropdownOpen && (
+									<motion.div
+										initial={{ opacity: 0, y: -10 }}
+										animate={{ opacity: 1, y: 0 }}
+										exit={{ opacity: 0, y: -10 }}
+										transition={{ duration: 0.2 }}
+										className='absolute top-full mt-0.5 right-6 rounded-lg overflow-hidden z-50 w-30'
+										style={{
+											backgroundColor:
+												'var(--color-bg-card)',
+										}}>
+										{[
+											...visibleFilters,
+											...extraFilters,
+										].map((f) => (
+											<button
+												key={f}
+												onClick={() => {
+													setFilter(f);
+													setDropdownOpen(false);
+												}}
+												className='flex items-center justify-between gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full'
+												style={{
+													backgroundColor:
+														filter === f
+															? 'var(--color-primary)'
+															: 'transparent',
+													color:
+														filter === f
+															? 'var(--color-text-black)'
+															: 'var(--color-text-secondary)',
+												}}>
+												{f
+													.replace(/_/g, ' ')
+													.replace(/^\w/, (c) =>
+														c.toUpperCase(),
+													)}
+											</button>
+										))}
+									</motion.div>
+								)}
+							</AnimatePresence>
+						</div>
 					</div>
+
 					{isLoading ? (
 						<p style={{ color: 'var(--color-text-white)' }}>
 							Loading...
@@ -189,7 +258,7 @@ const Home = () => {
 							No anime found.
 						</p>
 					) : (
-						<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6 max-w-7xl mx-auto'>
+						<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 py-6 max-w-7xl mx-auto px-6 md:px-0'>
 							{filtered.map((entry, index) => (
 								<motion.div
 									key={entry.anime_id}
@@ -218,7 +287,7 @@ const Home = () => {
 										className='p-3 rounded-b-md min-h-16'
 										style={{
 											backgroundColor:
-												'var(--color-bg-card)'
+												'var(--color-bg-card)',
 										}}>
 										<p
 											className='font-semibold truncate'

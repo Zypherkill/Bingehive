@@ -185,7 +185,7 @@ const Search = () => {
 									/>
 									{/* Info */}
 									<div
-										className='p-3 min-h-16'
+										className='p-3'
 										style={{
 											backgroundColor:
 												'var(--color-bg-card)',
@@ -196,20 +196,15 @@ const Search = () => {
 											style={{
 												color: 'var(--color-text-white)',
 											}}>
-											{getTitle(anime)}
+											{getTitle(anime) || 'Title missing'}
 										</p>
 										<p
-											className='text-sm'
+											className='text-sm truncate font-bold'
 											style={{
 												color: 'var(--color-primary)',
 											}}>
 											{anime.genres
-												.filter(
-													(g) =>
-														g.name !==
-														'Award Winning',
-												)
-												.slice(0, 2)
+												.slice(0, 3)
 												.map((g) => g.name)
 												.join(' | ')}
 										</p>
@@ -223,7 +218,7 @@ const Search = () => {
 							<button
 								onClick={() =>
 									setDisplayCount(
-										Math.min(displayCount + 15, 25),
+										Math.min(displayCount + 15, results.length),
 									)
 								}
 								className='px-6 py-2 rounded-lg font-semibold transition-colors'

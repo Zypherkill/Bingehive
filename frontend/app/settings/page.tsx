@@ -24,64 +24,79 @@ const Settings = () => {
 		}
 	};
 
-	const handleEmailUpdate = async () => {
+	const handleSaveChanges = async () => {
 		try {
-			if (!email) {
-				toast.error('Please enter an email');
-				return;
-			}
-			await updateEmail(email);
-			await fetchUser();
-			setEmail('');
-			toast.success('Email updated!');
-		} catch {
-			toast.error('Could not update email');
-		}
-	};
+			const hasEmail = email.trim() !== '';
+			const hasPassword =
+				currentPassword.trim() !== '' ||
+				newPassword.trim() !== '' ||
+				confirmPassword.trim() !== '';
 
-	const handlePasswordUpdate = async () => {
-		try {
-			if (newPassword !== confirmPassword) {
-				toast.error('Passwords do not match');
+			if (!hasEmail && !hasPassword) {
+				toast.error('Please enter at least email or password');
 				return;
 			}
-			await updatePassword(currentPassword, newPassword);
+
+			if (hasPassword) {
+				if (newPassword !== confirmPassword) {
+					toast.error('Passwords do not match');
+					return;
+				}
+				if (!currentPassword || !newPassword) {
+					toast.error('Please fill in all password fields');
+					return;
+				}
+			}
+
+			if (hasEmail) {
+				await updateEmail(email);
+			}
+
+			if (hasPassword) {
+				await updatePassword(currentPassword, newPassword);
+			}
+
+			await fetchUser();
+
+			setEmail('');
 			setCurrentPassword('');
 			setNewPassword('');
 			setConfirmPassword('');
-			toast.success('Password updated!');
+
+			toast.success(
+				`${hasEmail && hasPassword ? 'Email and password' : hasEmail ? 'Email' : 'Password'} updated!`,
+			);
 		} catch {
-			toast.error('Could not update password');
+			toast.error('Could not update settings');
 		}
 	};
 
 	return (
 		<ProtectedRoute>
-            <PageTransition>
-			<div
-				className='min-h-screen py-8'
-				style={{ backgroundColor: 'var(--color-bg-dark)' }}>
-				<div className='max-w-4xl mx-auto px-4'>
-					<h1
-						className='text-4xl font-bold mb-8'
-						style={{ color: 'var(--color-primary)' }}>
-						Settings
-					</h1>
+			<PageTransition>
+				<div
+					className='min-h-screen py-8 flex flex-col'
+					style={{ backgroundColor: 'var(--color-bg-dark)' }}>
+					<div className='max-w-4xl mx-auto px-4 w-full flex flex-col'>
+						<h1
+							className='text-4xl font-bold mb-8'
+							style={{ color: 'var(--color-primary)' }}>
+							Settings
+						</h1>
 
-					{/* All Settings in One Section */}
-					<div
-						className='p-6 rounded-lg'
-						style={{ backgroundColor: 'var(--color-bg-card)' }}>
-						{/* Profile Picture */}
+						{/* All Settings in One Section */}
 						<div
-							className='mb-12 pb-12'
-							style={{
-								borderBottom: `1px solid var(--color-bg-input)`,
-							}}>
-							<div className='flex justify-center'>
+							className='p-6 rounded-lg flex flex-col gap-8'
+							style={{ backgroundColor: 'var(--color-bg-card)' }}>
+							{/* Profile Picture */}
+							<div
+								className='pb-8 flex justify-center'
+								style={{
+									borderBottom: `1px solid var(--color-bg-input)`,
+								}}>
 								<div className='relative w-fit'>
 									<div
-										className='w-40 h-40 rounded-full border-4 p-2'
+										className='w-40 h-40 rounded-full border-4 p-2 flex items-center justify-center'
 										style={{
 											borderColor: 'var(--color-primary)',
 										}}>
@@ -103,7 +118,7 @@ const Settings = () => {
 										)}
 									</div>
 									<label
-										className='absolute bottom-0 right-0 rounded-full p-2 cursor-pointer transition-colors'
+										className='absolute bottom-0 right-0 rounded-full p-2 cursor-pointer transition-colors flex items-center justify-center'
 										style={{
 											backgroundColor:
 												'var(--color-primary)',
@@ -140,137 +155,143 @@ const Settings = () => {
 									</label>
 								</div>
 							</div>
-						</div>
 
-						{/* Email and Password in Grid */}
-						<div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
-							{/* Email */}
-							<div>
-								<h2
-									className='text-xl font-bold mb-4'
-									style={{
-										color: 'var(--color-text-white)',
-									}}>
-									Update Email
-								</h2>
-								<p
-									className='mb-4 text-sm'
-									style={{
-										color: 'var(--color-text-primary)',
-									}}>
-									Current:{' '}
-									<span
+							{/* Email and Password in Flex Container */}
+							<div className='flex flex-col md:flex-row gap-8 w-full'>
+								{/* Email */}
+								<div className='flex-1 flex flex-col gap-4'>
+									<h2
+										className='text-xl font-bold'
 										style={{
-											color: 'var(--color-primary)',
-										}}>
-										{user?.email}
-									</span>
-								</p>
-								<input
-									type='email'
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
-									placeholder='New email'
-									className='w-full p-3 rounded-lg focus:outline-none focus:ring-2 mb-4'
-									style={
-										{
-											backgroundColor:
-												'var(--color-bg-input)',
 											color: 'var(--color-text-white)',
-											'--tw-ring-color':
-												'var(--color-primary)',
-										} as React.CSSProperties
-									}
-								/>
-								<button
-									onClick={handleEmailUpdate}
-									className='w-full font-bold py-2 px-4 rounded-lg transition-opacity hover:opacity-90'
-									style={{
-										backgroundColor: 'var(--color-primary)',
-										color: 'var(--color-text-black)',
-									}}>
-									Update Email
-								</button>
+										}}>
+										Update Email
+									</h2>
+									<p
+										className='text-sm'
+										style={{
+											color: 'var(--color-text-primary)',
+										}}>
+										Current:{' '}
+										<span
+											style={{
+												color: 'var(--color-primary)',
+											}}>
+											{user?.email}
+										</span>
+									</p>
+									<input
+										type='email'
+										value={email}
+										onChange={(e) =>
+											setEmail(e.target.value)
+										}
+										placeholder='New email'
+										className='flex-1 p-3 rounded-lg focus:outline-none focus:ring-2'
+										style={
+											{
+												backgroundColor:
+													'var(--color-bg-input)',
+												color: 'var(--color-text-white)',
+												'--tw-ring-color':
+													'var(--color-primary)',
+											} as React.CSSProperties
+										}
+									/>
+								</div>
+
+								{/* Password */}
+								<div className='flex-1 flex flex-col gap-4'>
+									<h2
+										className='text-xl font-bold'
+										style={{
+											color: 'var(--color-text-white)',
+										}}>
+										Change Password
+									</h2>
+									<div className='flex flex-col gap-4'>
+										<input
+											type='password'
+											value={currentPassword}
+											onChange={(e) =>
+												setCurrentPassword(
+													e.target.value,
+												)
+											}
+											placeholder='Current password'
+											className='p-3 rounded-lg focus:outline-none focus:ring-2'
+											style={
+												{
+													backgroundColor:
+														'var(--color-bg-input)',
+													color: 'var(--color-text-white)',
+													'--tw-ring-color':
+														'var(--color-primary)',
+												} as React.CSSProperties
+											}
+										/>
+										<input
+											type='password'
+											value={newPassword}
+											onChange={(e) =>
+												setNewPassword(e.target.value)
+											}
+											placeholder='New password'
+											className='p-3 rounded-lg focus:outline-none focus:ring-2'
+											style={
+												{
+													backgroundColor:
+														'var(--color-bg-input)',
+													color: 'var(--color-text-white)',
+													'--tw-ring-color':
+														'var(--color-primary)',
+												} as React.CSSProperties
+											}
+										/>
+										<input
+											type='password'
+											value={confirmPassword}
+											onChange={(e) =>
+												setConfirmPassword(
+													e.target.value,
+												)
+											}
+											placeholder='Confirm password'
+											className='p-3 rounded-lg focus:outline-none focus:ring-2'
+											style={
+												{
+													backgroundColor:
+														'var(--color-bg-input)',
+													color: 'var(--color-text-white)',
+													'--tw-ring-color':
+														'var(--color-primary)',
+												} as React.CSSProperties
+											}
+										/>
+									</div>
+								</div>
 							</div>
 
-							{/* Password */}
-							<div>
-								<h2
-									className='text-xl font-bold mb-4'
-									style={{
-										color: 'var(--color-text-white)',
-									}}>
-									Change Password
-								</h2>
-								<input
-									type='password'
-									value={currentPassword}
-									onChange={(e) =>
-										setCurrentPassword(e.target.value)
-									}
-									placeholder='Current password'
-									className='w-full p-3 rounded-lg focus:outline-none focus:ring-2 mb-4'
-									style={
-										{
-											backgroundColor:
-												'var(--color-bg-input)',
-											color: 'var(--color-text-white)',
-											'--tw-ring-color':
-												'var(--color-primary)',
-										} as React.CSSProperties
-									}
-								/>
-								<input
-									type='password'
-									value={newPassword}
-									onChange={(e) =>
-										setNewPassword(e.target.value)
-									}
-									placeholder='New password'
-									className='w-full p-3 rounded-lg focus:outline-none focus:ring-2 mb-4'
-									style={
-										{
-											backgroundColor:
-												'var(--color-bg-input)',
-											color: 'var(--color-text-white)',
-											'--tw-ring-color':
-												'var(--color-primary)',
-										} as React.CSSProperties
-									}
-								/>
-								<input
-									type='password'
-									value={confirmPassword}
-									onChange={(e) =>
-										setConfirmPassword(e.target.value)
-									}
-									placeholder='Confirm password'
-									className='w-full p-3 rounded-lg focus:outline-none focus:ring-2 mb-4'
-									style={
-										{
-											backgroundColor:
-												'var(--color-bg-input)',
-											color: 'var(--color-text-white)',
-											'--tw-ring-color':
-												'var(--color-primary)',
-										} as React.CSSProperties
-									}
-								/>
+							{/* Single Save Button */}
+							<div
+								className='pt-8 flex'
+								style={{
+									borderTop: `1px solid var(--color-bg-input)`,
+								}}>
 								<button
-									onClick={handlePasswordUpdate}
-									className='w-full font-bold py-2 px-4 rounded-lg transition-opacity hover:opacity-90'
+									onClick={handleSaveChanges}
+									className='w-full font-bold py-3 px-4 rounded-lg transition-opacity hover:opacity-90'
 									style={{
 										backgroundColor: 'var(--color-primary)',
 										color: 'var(--color-text-black)',
 									}}>
-									Update Password
+									Save Changes
 								</button>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-            </PageTransition>
+			</PageTransition>
 		</ProtectedRoute>
 	);
 };
