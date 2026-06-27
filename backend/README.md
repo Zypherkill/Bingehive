@@ -58,21 +58,21 @@ backend/
 ## Environment Variables
 
 ```env
-DATABASE_URL= postgresql://...
-JWT_SECRET= your-secret-key
-JWT_ALGORITHM= HS256
-JWT_EXPIRE_MINUTES= 60
-MAL_CLIENT_ID= your-mal-client-id
-SUPABASE_URL= https://your-project.supabase.co
-SUPABASE_SERVICE_KEY= your-service-role-key
+DATABASE_URL = postgresql://...
+JWT_SECRET = your-secret-key
+JWT_ALGORITHM = HS256
+JWT_EXPIRE_MINUTES = 60
+MAL_CLIENT_ID = your-mal-client-id
+SUPABASE_URL = https://your-project.supabase.co
+SUPABASE_SERVICE_KEY = your-service-role-key
 
 # Only needed for seed_users.py
-USER1_EMAIL= user1@example.com
-USER1_PASSWORD= password
-USER1_USERNAME= User1
-USER2_EMAIL= user2@example.com
-USER2_PASSWORD= password
-USER2_USERNAME= User2
+USER1_EMAIL = user1@example.com
+USER1_PASSWORD = password
+USER1_USERNAME = User1
+USER2_EMAIL = user2@example.com
+USER2_PASSWORD = password
+USER2_USERNAME = User2
 ```
 
 ---
