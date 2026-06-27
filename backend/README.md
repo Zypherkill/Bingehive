@@ -43,28 +43,6 @@ backend/
 ├── seed_users.py          # One-time user creation script
 └── main.py                # App entry point
 ```
-
----
-
-## Getting Started
-
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate        # Windows
-source venv/bin/activate     # macOS/Linux
-
-pip install fastapi uvicorn[standard] sqlalchemy psycopg2-binary python-dotenv "passlib[bcrypt]==4.0.1" "python-jose[cryptography]" httpx slowapi supabase
-
-# Create .env (see below), then:
-python seed_users.py         # Create the two users (run once)
-uvicorn main:app --reload    # Start server
-```
-
-API runs at `http://127.0.0.1:8000` — Swagger docs at `http://127.0.0.1:8000/docs`.
-
----
-
 ## Environment Variables
 
 ```env
