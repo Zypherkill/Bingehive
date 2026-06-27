@@ -214,10 +214,10 @@ const Home = () => {
 						<div className='md:hidden relative w-full flex justify-end mt-4'>
 							<button
 								onClick={() => setDropdownOpen(!dropdownOpen)}
-								className='flex items-center justify-around px-4 py-2 rounded-lg text-sm font-medium transition-colors w-30'
+								className='flex items-center justify-between px-4 py-1 rounded-lg text-sm font-medium transition-colors w-30'
 								style={{
 									backgroundColor: 'var(--color-bg-card)',
-									color: 'var(--color-text-secondary)',
+									color: 'var(--color-text-primary)',
 								}}>
 								{filter
 									.replace(/_/g, ' ')
@@ -251,7 +251,7 @@ const Home = () => {
 													setFilter(f);
 													setDropdownOpen(false);
 												}}
-												className='flex items-center justify-between gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full'
+												className='flex items-center justify-between gap-2 px-4 py-1 rounded-lg text-sm font-medium transition-colors w-full'
 												style={{
 													backgroundColor:
 														filter === f
