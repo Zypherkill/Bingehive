@@ -9,8 +9,6 @@ A REST API built with FastAPI and Python. Handles authentication, anime search v
 - **FastAPI** — web framework
 - **SQLAlchemy** — database ORM
 - **Supabase** — hosted PostgreSQL database
-- **MyAnimeList API** — anime search and details
-- **AniList API** — streaming service links (GraphQL)
 - **passlib/bcrypt** — password hashing
 - **python-jose** — JWT tokens
 - **httpx** — async HTTP client
