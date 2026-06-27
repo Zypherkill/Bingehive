@@ -203,10 +203,11 @@ const Search = () => {
 											style={{
 												color: 'var(--color-primary)',
 											}}>
-											{anime.genres
-												.slice(0, 3)
-												.map((g) => g.name)
-												.join(' | ')}
+											{anime.genres && anime.genres.length > 0
+												? anime.genres
+														.map((g) => g.name)
+														.join(' | ')
+												: 'N/A'}
 										</p>
 									</div>
 								</motion.div>
@@ -218,7 +219,10 @@ const Search = () => {
 							<button
 								onClick={() =>
 									setDisplayCount(
-										Math.min(displayCount + 15, results.length),
+										Math.min(
+											displayCount + 15,
+											results.length,
+										),
 									)
 								}
 								className='px-6 py-2 rounded-lg font-semibold transition-colors'

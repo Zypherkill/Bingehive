@@ -11,7 +11,7 @@ import { getTitle } from '@/utils/utils';
 import { useAuthStore } from '@/store/authStore';
 
 const Home = () => {
-	const {token} = useAuthStore();
+	const { token } = useAuthStore();
 	const [library, setLibrary] = useState<LibraryEntryFull[]>([]);
 	const [filter, setFilter] = useState<LibraryStatus | 'all'>('all');
 	const [isLoading, setIsLoading] = useState(true);
@@ -30,11 +30,16 @@ const Home = () => {
 	];
 
 	useEffect(() => {
-		if(!token) return;
-		getLibrary().then((data) => {
-			setLibrary(data ?? []);
-			setIsLoading(false);
-		});
+		if (!token) return;
+		getLibrary()
+			.then((data) => {
+				setLibrary(Array.isArray(data) ? data : []);
+				setIsLoading(false);
+			})
+			.catch(() => {
+				setLibrary([]);
+				setIsLoading(false);
+			});
 	}, [token]);
 
 	const statusOrder: Record<string, number> = {
@@ -45,11 +50,12 @@ const Home = () => {
 		completed: 4,
 	};
 
-	const filtered = (
-		filter === 'all'
-			? [...library]
-			: library.filter((entry) => entry.status === filter)
-	).sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+	const filtered = Array.isArray(library)
+		? (filter === 'all'
+				? [...library]
+				: library.filter((entry) => entry.status === filter)
+			).sort((a, b) => statusOrder[a.status] - statusOrder[b.status])
+		: [];
 
 	const currentlyWatching = library.find(
 		(entry) => entry.status === 'watching',
@@ -110,7 +116,8 @@ const Home = () => {
 						</div>
 					</div>
 					<div className='flex items-center justify-between gap-10 w-full max-w-7xl mt-0 md:mt-6'>
-						<h1 className='text-2xl font-bold ml-6 md:ml-0'
+						<h1
+							className='text-2xl font-bold ml-6 md:ml-0'
 							style={{ color: 'var(--color-text-white)' }}>
 							Library
 						</h1>
@@ -294,7 +301,7 @@ const Home = () => {
 											style={{
 												color: 'var(--color-text-white)',
 											}}>
-											{getTitle(entry.anime)}
+											{getTitle(entry.anime) || 'Title missing'}
 										</p>
 										<p
 											className={`text-sm font-bold capitalize ${statusColor[entry.status]}`}>
