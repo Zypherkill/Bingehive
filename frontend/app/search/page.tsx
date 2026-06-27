@@ -125,9 +125,10 @@ const Search = () => {
 									transition={{ delay: index * 0.1 }}>
 									{/* Betyg */}
 									<div
-										className='absolute top-2 left-2 text-sm px-2 py-1 rounded flex items-center gap-1'
+										className='flex items-center absolute rounded top-0 left-0 px-3 py-2 text-sm font-bold'
 										style={{
-											backgroundColor: 'rgba(0,0,0,0.7)',
+											backgroundColor:
+												'var(--color-bg-card)',
 											color: 'var(--color-accent-warning)',
 										}}>
 										⭐ {anime.mean ?? 'N/A'}
@@ -138,15 +139,13 @@ const Search = () => {
 											!libraryIds.includes(anime.id) &&
 											handleAdd(anime.id)
 										}
-										className='absolute top-2 right-2 rounded-full w-9 h-9 flex items-center justify-center transition-colors font-bold'
+										className='absolute top-0 right-0 w-9 h-9 flex items-center rounded justify-center transition-colors font-bold'
 										style={{
 											backgroundColor:
 												libraryIds.includes(anime.id)
-													? 'var(--color-primary)'
-													: 'rgba(0,0,0,0.7)',
-											color: libraryIds.includes(anime.id)
-												? 'var(--color-text-black)'
-												: 'var(--color-text-white)',
+													? 'var(--color-success)'
+													: 'var(--color-primary)',
+											color: 'var(--color-text-black)',
 											cursor: libraryIds.includes(
 												anime.id,
 											)
@@ -168,7 +167,7 @@ const Search = () => {
 												!libraryIds.includes(anime.id)
 											) {
 												e.currentTarget.style.backgroundColor =
-													'rgba(0,0,0,0.7)';
+													'var(--color-bg-card)';
 												e.currentTarget.style.color =
 													'var(--color-text-white)';
 											}
@@ -203,7 +202,8 @@ const Search = () => {
 											style={{
 												color: 'var(--color-primary)',
 											}}>
-											{anime.genres && anime.genres.length > 0
+											{anime.genres &&
+											anime.genres.length > 0
 												? anime.genres
 														.map((g) => g.name)
 														.join(' | ')

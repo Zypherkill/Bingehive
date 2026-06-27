@@ -2,13 +2,15 @@
 import { useState, useEffect } from 'react';
 import { LibraryEntryFull, LibraryStatus } from '@/types';
 import { ProtectedRoute } from '../components/ProtectedRoute';
-import { getLibrary, deleteAnime } from '@/lib/api';
-import { FaChevronRight, FaChevronLeft, FaChevronDown, FaTrash } from 'react-icons/fa';
+import { getLibrary } from '@/lib/api';
+import { FaChevronRight, FaChevronLeft, FaChevronDown } from 'react-icons/fa';
 import { statusColor } from '@/utils/utils';
 import { PageTransition } from '@/components/PageTransition';
 import { AnimatePresence, motion } from 'framer-motion';
 import { getTitle } from '@/utils/utils';
 import { useAuthStore } from '@/store/authStore';
+import { DeleteDialog } from '@/components/DeleteDialog';
+import { IoRemove } from 'react-icons/io5';
 
 const Home = () => {
 	const { token } = useAuthStore();
@@ -17,17 +19,18 @@ const Home = () => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [showAllFilters, setShowAllFilters] = useState(false);
 	const [dropdownOpen, setDropdownOpen] = useState(false);
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [animeToDelete, setAnimeToDelete] = useState<{
+		id: number;
+		title: string;
+	} | null>(null);
 
 	const visibleFilters: (LibraryStatus | 'all')[] = [
 		'all',
 		'plan_to_watch',
 		'completed',
 	];
-	const extraFilters: (LibraryStatus | 'all')[] = [
-		'watching',
-		'on_hold',
-		'dropped',
-	];
+	const extraFilters: (LibraryStatus | 'all')[] = ['on_hold', 'dropped'];
 
 	useEffect(() => {
 		if (!token) return;
@@ -61,14 +64,19 @@ const Home = () => {
 		(entry) => entry.status === 'watching',
 	);
 
-	const handleDelete = async (animeId: number) => {
-		try {
-			await deleteAnime(animeId);
+	const handleDeleteClick = (animeId: number, title: string) => {
+		setAnimeToDelete({ id: animeId, title });
+		setDeleteDialogOpen(true);
+	};
+
+	const handleConfirmDelete = () => {
+		if (animeToDelete) {
 			setLibrary((prevLibrary) =>
-				prevLibrary.filter((entry) => entry.anime.id !== animeId),
+				prevLibrary.filter(
+					(entry) => entry.anime.id !== animeToDelete.id,
+				),
 			);
-		} catch (error) {
-			console.error('Failed to delete anime:', error);
+			setAnimeToDelete(null);
 		}
 	};
 
@@ -126,9 +134,9 @@ const Home = () => {
 							</button>
 						</div>
 					</div>
-					<div className='flex items-center justify-between gap-10 w-full max-w-7xl mt-0 md:mt-6'>
+					<div className='flex items-center justify-between gap-10 w-full max-w-7xl mt-4 md:mt-6 px-6'>
 						<h1
-							className='text-2xl font-bold ml-6 md:ml-0'
+							className='text-2xl font-bold'
 							style={{ color: 'var(--color-text-white)' }}>
 							Library
 						</h1>
@@ -284,27 +292,14 @@ const Home = () => {
 									initial={{ opacity: 0, y: 10 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: index * 0.1 }}>
-									{/* Betyg */}
-									<div className='w-full absolute top-2 text-sm rounded flex items-center justify-between'>
-										<div
-											className='flex items-center gap-1 px-2 py-1 rounded'
-											style={{
-												backgroundColor:
-													'rgba(0,0,0,0.7)',
-												color: 'var(--color-accent-warning)',
-											}}>
-											⭐ {entry.anime.mean_score ?? 'N/A'}
-										</div>
-										<div
-											onClick={() => handleDelete(entry.anime_id)}
-											className='flex items-center gap-1 px-2 py-1 rounded'
-											style={{
-												backgroundColor:
-													'rgba(0,0,0,0.7)',
-												color: 'var(--color-danger)',
-											}}>
-											Remove
-										</div>
+									<div
+										className='flex items-center absolute top-0 left-0 px-3 py-2 rounded text-sm font-bold'
+										style={{
+											backgroundColor:
+												'var(--color-bg-card)',
+											color: 'var(--color-accent-warning)',
+										}}>
+										⭐ {entry.anime.mean_score ?? 'N/A'}
 									</div>
 									<img
 										src={
@@ -315,7 +310,7 @@ const Home = () => {
 										className='w-full h-64 object-cover rounded-t-md'
 									/>
 									<div
-										className='p-3 rounded-b-md min-h-16'
+										className='p-3 rounded-b-md min-h-16 flex flex-col justify-between gap-2'
 										style={{
 											backgroundColor:
 												'var(--color-bg-card)',
@@ -328,19 +323,43 @@ const Home = () => {
 											{getTitle(entry.anime) ||
 												'Title missing'}
 										</p>
-										<p
-											className={`text-sm font-bold capitalize ${statusColor[entry.status]}`}>
-											{entry.status
-												.replace(/_/g, ' ')
-												.replace(/^\w/, (c) =>
-													c.toUpperCase(),
-												)}
-										</p>
+										<div className='w-full text-md rounded flex justify-between items-center'>
+											<p
+												className={`text-sm font-bold capitalize ${statusColor[entry.status]}`}>
+												{entry.status
+													.replace(/_/g, ' ')
+													.replace(/^\w/, (c) =>
+														c.toUpperCase(),
+													)}
+											</p>
+											<IoRemove
+												className='cursor-pointer text-2xl hover:opacity-75 transition-opacity'
+												onClick={() =>
+													handleDeleteClick(
+														entry.anime_id,
+														getTitle(entry.anime),
+													)
+												}
+												style={{
+													color: 'var(--color-danger-dark)',
+												}}
+											/>
+										</div>
 									</div>
 								</motion.div>
 							))}
 						</div>
 					)}
+					<DeleteDialog
+						isOpen={deleteDialogOpen}
+						animeTitle={animeToDelete?.title || ''}
+						animeId={animeToDelete?.id || 0}
+						onClose={() => {
+							setDeleteDialogOpen(false);
+							setAnimeToDelete(null);
+						}}
+						onConfirm={handleConfirmDelete}
+					/>
 				</div>
 			</PageTransition>
 		</ProtectedRoute>
