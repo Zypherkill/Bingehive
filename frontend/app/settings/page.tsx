@@ -157,9 +157,9 @@ const Settings = () => {
 							</div>
 
 							{/* Email and Password in Flex Container */}
-							<div className='flex flex-col md:flex-row gap-8 w-full'>
+							<div className='flex flex-col gap-8 w-full max-w-sm mx-auto'>
 								{/* Email */}
-								<div className='flex-1 flex flex-col gap-4'>
+								<div className='flex flex-col gap-4'>
 									<h2
 										className='text-xl font-bold'
 										style={{
@@ -187,7 +187,7 @@ const Settings = () => {
 											setEmail(e.target.value)
 										}
 										placeholder='New email'
-										className='flex-1 p-3 rounded-lg focus:outline-none focus:ring-2'
+										className='p-3 rounded-lg focus:outline-none focus:ring-2'
 										style={
 											{
 												backgroundColor:
@@ -201,7 +201,7 @@ const Settings = () => {
 								</div>
 
 								{/* Password */}
-								<div className='flex-1 flex flex-col gap-4'>
+								<div className='flex flex-col gap-4'>
 									<h2
 										className='text-xl font-bold'
 										style={{
@@ -274,7 +274,7 @@ const Settings = () => {
 
 							{/* Single Save Button */}
 							<div
-								className='pt-8 flex'
+								className='pt-8 flex justify-center max-w-sm mx-auto w-full'
 								style={{
 									borderTop: `1px solid var(--color-bg-input)`,
 								}}>

@@ -195,7 +195,7 @@ const Search = () => {
 											style={{
 												color: 'var(--color-text-white)',
 											}}>
-											{getTitle(anime) || 'Title missing'}
+											{getTitle(anime) || 'Missing title'}
 										</p>
 										<p
 											className='text-sm truncate font-bold'

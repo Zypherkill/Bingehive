@@ -14,7 +14,7 @@ export const ProtectedRoute: React.FC<Props> = ({ children }) => {
 
 	useEffect(() => {
 		if (isInitialized && !user) {
-			router.push('/login');
+			router.push('/');
 		}
 	}, [isInitialized, user, router]);
 

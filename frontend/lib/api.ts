@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/store/authStore';
 import { Anime, LibraryEntryFull, StreamingLink, User, UserAnimeData } from '../types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
@@ -41,7 +42,16 @@ function logout(): void {
 function getUserData(animeID: number): Promise<UserAnimeData> {
 	return fetch(`${API_URL}/library/${animeID}/userdata`, {
 		headers: authHeaders(),
-	}).then((res) => res.json());
+	}).then(handleResponse);
+}
+
+function handleResponse(res: Response) {
+	if (res.status === 401) {
+		useAuthStore.getState().logout();
+		window.location.href = '/';
+		throw new Error('Unauthorized');
+	}
+	return res.json();
 }
 
 //Anime and library management
@@ -52,26 +62,26 @@ function searchAnime(q?: string): Promise<{ data: { node: Anime }[] }> {
 
 	return fetch(`${API_URL}/anime/search?${params.toString()}`, {
 		headers: authHeaders(),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function deleteAnime(animeId: number): Promise<{ detail: string }> {
 	return fetch(`${API_URL}/library/${animeId}`, {
 		method: 'DELETE',
 		headers: authHeaders(),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function getStreamingLinks(animeId: number): Promise<StreamingLink[]> {
 	return fetch(`${API_URL}/anime/${animeId}/streaming`, {
 		headers: authHeaders(),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function getLibrary(): Promise<LibraryEntryFull[]> {
 	return fetch(`${API_URL}/library/`, {
 		headers: authHeaders(),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function addAnime(mal_id: number): Promise<LibraryEntryFull> {
@@ -79,19 +89,19 @@ function addAnime(mal_id: number): Promise<LibraryEntryFull> {
 		method: 'POST',
 		headers: authHeaders(),
 		body: JSON.stringify({ mal_id }),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function getAnimeDetails(malId: number): Promise<{ data: Anime }> {
 	return fetch(`${API_URL}/anime/${malId}/details`, {
 		headers: authHeaders(),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function getPopularAnime(): Promise<{ data: { node: Anime }[] }> {
 	return fetch(`${API_URL}/anime/popular`, {
 		headers: authHeaders(),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function addCustomAnime(data: {
@@ -114,7 +124,7 @@ function addCustomAnime(data: {
 		method: 'POST',
 		headers: authHeaders(),
 		body: JSON.stringify(data),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function updateStatus(animeId: number, status: string): Promise<LibraryEntryFull> {
@@ -122,7 +132,7 @@ function updateStatus(animeId: number, status: string): Promise<LibraryEntryFull
 		method: 'PATCH',
 		headers: authHeaders(),
 		body: JSON.stringify({ status }),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 //User data management
@@ -139,13 +149,13 @@ function updateUserData(
 		method: 'PATCH',
 		headers: authHeaders(),
 		body: JSON.stringify(body),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function getMe(): Promise<User> {
 	return fetch(`${API_URL}/me`, {
 		headers: authHeaders(),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function updateEmail(newEmail: string): Promise<{ email: string }> {
@@ -153,7 +163,7 @@ function updateEmail(newEmail: string): Promise<{ email: string }> {
 		method: 'PATCH',
 		headers: authHeaders(),
 		body: JSON.stringify({ new_email: newEmail }),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function updatePassword(
@@ -167,7 +177,7 @@ function updatePassword(
 			current_password: currentPassword,
 			new_password: newPassword,
 		}),
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
@@ -177,7 +187,7 @@ function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
 		method: 'POST',
 		headers: authHeadersFormData(),
 		body: formData,
-	}).then((res) => res.json());
+	}).then(handleResponse);
 }
 
 export {
@@ -186,6 +196,7 @@ export {
 	authHeaders,
 	login,
 	logout,
+	handleResponse,
 	getUserData,
 	searchAnime,
 	deleteAnime,
