@@ -8,9 +8,17 @@ export const statusColor: Record<string, string> = {
 	on_hold: 'text-orange-400',
 };
 
+export const statusBgColor: Record<string, string> = {
+	watching: '#06b6d4',
+	plan_to_watch: '#facc15',
+	completed: '#4ade80',
+	dropped: '#f87171',
+	on_hold: '#fb923c',
+};
+
 export const getTitle = (anime: {
 	title: string;
-	title_en?: string | null;
+	title_en?: string | '' | null;
 }): string => {
-	return anime.title_en ?? anime.title;
+	return anime.title_en || anime.title;
 };

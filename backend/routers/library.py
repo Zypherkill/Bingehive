@@ -130,6 +130,13 @@ def update_user_data(anime_id: int, request: UserDataRequest, db: Session = Depe
     db.refresh(user_data)
     return user_data
 
+@router.get("/{anime_id}/userdata")
+def get_user_data(anime_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user_data = db.query(UserAnimeData).filter(UserAnimeData.anime_id == anime_id, UserAnimeData.user_id == current_user.id).first()
+    if not user_data:
+        return
+    return user_data
+
 @router.delete("/{anime_id}")
 def remove_anime(anime_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     entry = db.query(LibraryEntry).filter(LibraryEntry.anime_id == anime_id).first()

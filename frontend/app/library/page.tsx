@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { LibraryEntryFull, LibraryStatus } from '@/types';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { getLibrary } from '@/lib/api';
-import { FaChevronRight, FaChevronLeft, FaChevronDown } from 'react-icons/fa';
+import { FaChevronDown } from 'react-icons/fa';
 import { statusColor } from '@/utils/utils';
 import { PageTransition } from '@/components/PageTransition';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -11,26 +11,30 @@ import { getTitle } from '@/utils/utils';
 import { useAuthStore } from '@/store/authStore';
 import { DeleteDialog } from '@/components/DeleteDialog';
 import { IoRemove } from 'react-icons/io5';
+import { AnimeModal } from '@/components/AnimeModal';
 
 const Library = () => {
 	const { token } = useAuthStore();
 	const [library, setLibrary] = useState<LibraryEntryFull[]>([]);
-	const [filter, setFilter] = useState<LibraryStatus | 'all'>('all');
+	const [filter, setFilter] = useState<LibraryStatus>('plan_to_watch');
+	const [displayCount, setDisplayCount] = useState(12);
 	const [isLoading, setIsLoading] = useState(true);
-	const [showAllFilters, setShowAllFilters] = useState(false);
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [animeToDelete, setAnimeToDelete] = useState<{
 		id: number;
 		title: string;
 	} | null>(null);
+	const [selectedEntry, setSelectedEntry] = useState<LibraryEntryFull | null>(
+		null,
+	);
 
-	const visibleFilters: (LibraryStatus | 'all')[] = [
-		'all',
+	const filters: LibraryStatus[] = [
 		'plan_to_watch',
 		'completed',
+		'on_hold',
+		'dropped',
 	];
-	const extraFilters: (LibraryStatus | 'all')[] = ['on_hold', 'dropped'];
 
 	useEffect(() => {
 		if (!token) return;
@@ -45,20 +49,10 @@ const Library = () => {
 			});
 	}, [token]);
 
-	const statusOrder: Record<string, number> = {
-		watching: 0,
-		plan_to_watch: 1,
-		on_hold: 2,
-		dropped: 3,
-		completed: 4,
-	};
-
-	const filtered = Array.isArray(library)
-		? (filter === 'all'
-				? [...library]
-				: library.filter((entry) => entry.status === filter)
-			).sort((a, b) => statusOrder[a.status] - statusOrder[b.status])
-		: [];
+	const filtered = library
+		.filter((entry) => entry.status === filter)
+		.sort((a, b) => getTitle(a.anime).localeCompare(getTitle(b.anime)))
+		.slice(0, displayCount);
 
 	const currentlyWatching = library.find(
 		(entry) => entry.status === 'watching',
@@ -142,14 +136,13 @@ const Library = () => {
 						</h1>
 
 						<div
-							className=' hidden md:flex rounded-lg gap-1 overflow-hidden transition-all duration-700'
+							className='hidden md:flex rounded-lg gap-1 overflow-hidden transition-all duration-700'
 							style={{ backgroundColor: 'var(--color-bg-card)' }}>
-							{/* Alltid synliga */}
-							{visibleFilters.map((f) => (
+							{filters.map((f) => (
 								<button
 									key={f}
 									onClick={() => setFilter(f)}
-									className='px-4 py-1.5 rounded-md text-sm font-lg transition-colors whitespace-nowrap'
+									className='px-4 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap'
 									style={{
 										backgroundColor:
 											filter === f
@@ -165,51 +158,6 @@ const Library = () => {
 										.replace(/^\w/, (c) => c.toUpperCase())}
 								</button>
 							))}
-
-							{/* Extra knappar — alltid renderade men gömda */}
-							{extraFilters.map((f) => (
-								<button
-									key={f}
-									onClick={() => setFilter(f)}
-									className='px-4 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-all duration-700'
-									style={{
-										backgroundColor:
-											filter === f
-												? 'var(--color-primary)'
-												: 'transparent',
-										color:
-											filter === f
-												? 'var(--color-text-black)'
-												: 'var(--color-text-secondary)',
-										maxWidth: showAllFilters
-											? '150px'
-											: '0px',
-										opacity: showAllFilters ? 1 : 0,
-										padding: showAllFilters
-											? undefined
-											: '0',
-										overflow: 'hidden',
-									}}>
-									{f
-										.replace(/_/g, ' ')
-										.replace(/^\w/, (c) => c.toUpperCase())}
-								</button>
-							))}
-
-							<button
-								onClick={() =>
-									setShowAllFilters(!showAllFilters)
-								}
-								className='px-3 py-1.5 rounded-md transition-all duration-300'
-								style={{
-									color: 'var(--color-text-secondary)',
-								}}>
-								{showAllFilters ? (
-									<FaChevronLeft />
-								) : (
-									<FaChevronRight />
-								)}
-							</button>
 						</div>
 						<div className='md:hidden relative w-full flex justify-end'>
 							<button
@@ -241,10 +189,7 @@ const Library = () => {
 											backgroundColor:
 												'var(--color-bg-card)',
 										}}>
-										{[
-											...visibleFilters,
-											...extraFilters,
-										].map((f) => (
+										{filters.map((f) => (
 											<button
 												key={f}
 												onClick={() => {
@@ -307,7 +252,8 @@ const Library = () => {
 											'/placeholder.png'
 										}
 										alt={getTitle(entry.anime)}
-										className='w-full h-64 object-cover rounded-t-md'
+										className='w-full h-68 object-cover rounded-t-md'
+										onClick={() => setSelectedEntry(entry)}
 									/>
 									<div
 										className='p-3 rounded-b-md min-h-16 flex flex-col justify-between gap-2'
@@ -348,6 +294,35 @@ const Library = () => {
 									</div>
 								</motion.div>
 							))}
+							{library.filter((entry) => entry.status === filter)
+								.length > displayCount && (
+								<div className='flex justify-center col-span-full pt-4'>
+									<button
+										onClick={() =>
+											setDisplayCount(
+												Math.min(
+													displayCount + 10,
+													library.filter((entry) => entry.status === filter).length,
+												),
+											)
+										}
+										className='px-6 py-2 rounded-lg font-semibold transition-colors'
+										style={{
+											backgroundColor:
+												'var(--color-primary)',
+											color: 'var(--color-text-black)',
+										}}
+										onMouseEnter={(e) => {
+											e.currentTarget.style.opacity =
+												'0.8';
+										}}
+										onMouseLeave={(e) => {
+											e.currentTarget.style.opacity = '1';
+										}}>
+										Load More
+									</button>
+								</div>
+							)}
 						</div>
 					)}
 					<DeleteDialog
@@ -360,6 +335,14 @@ const Library = () => {
 						}}
 						onConfirm={handleConfirmDelete}
 					/>
+
+					{selectedEntry && (
+						<AnimeModal
+							mode='library'
+							entry={selectedEntry}
+							onClose={() => setSelectedEntry(null)}
+						/>
+					)}
 				</div>
 			</PageTransition>
 		</ProtectedRoute>

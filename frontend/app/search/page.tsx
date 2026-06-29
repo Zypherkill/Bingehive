@@ -9,15 +9,17 @@ import { motion } from 'framer-motion';
 import { useSearchStore } from '@/store/searchStore';
 import { getTitle } from '@/utils/utils';
 import { useAuthStore } from '@/store/authStore';
+import { AnimeModal } from '@/components/AnimeModal';
 
 const Search = () => {
 	const { query, setQuery, results, setResults, lastQuery, setLastQuery } =
 		useSearchStore();
 	const [isLoading, setIsLoading] = useState(false);
-	const [displayCount, setDisplayCount] = useState(10);
+	const [displayCount, setDisplayCount] = useState(12);
 
 	const [libraryIds, setLibraryIds] = useState<number[]>([]);
 	const { token } = useAuthStore();
+	const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
 
 	useEffect(() => {
 		if (!token) return;
@@ -63,7 +65,8 @@ const Search = () => {
 			.filter(
 				(anime: Anime, index: number, self: Anime[]) =>
 					index === self.findIndex((a) => a.id === anime.id),
-			);
+			)
+			.sort((a, b) => (b.mean ?? 0) - (a.mean ?? 0));
 
 		setResults(filtered);
 		setIsLoading(false);
@@ -82,8 +85,8 @@ const Search = () => {
 	return (
 		<ProtectedRoute>
 			<PageTransition>
-				<div className='flex flex-col items-center min-h-screen mt-0 md:mt-6'>
-					<div className='flex align-center w-full px-4 md:px-0 mt-1'>
+				<div className='flex flex-col items-center min-h-screen mt-3 md:mt-6'>
+					<div className='flex align-center w-full px-4 md:px-0'>
 						<input
 							className='w-full max-w-2xl mx-auto p-3 rounded-2xl focus:outline-none focus:ring-2'
 							style={
@@ -114,7 +117,7 @@ const Search = () => {
 							</span>
 						</p>
 					)}
-					<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6 max-w-7xl mx-auto'>
+					<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6 max-w-7xl'>
 						{results
 							.map((anime, index) => (
 								<motion.div
@@ -144,7 +147,7 @@ const Search = () => {
 											backgroundColor:
 												libraryIds.includes(anime.id)
 													? 'var(--color-success)'
-													: 'var(--color-primary)',
+													: 'var(--color-accent-warning)',
 											color: 'var(--color-text-black)',
 											cursor: libraryIds.includes(
 												anime.id,
@@ -152,26 +155,7 @@ const Search = () => {
 												? 'default'
 												: 'pointer',
 										}}
-										onMouseEnter={(e) => {
-											if (
-												!libraryIds.includes(anime.id)
-											) {
-												e.currentTarget.style.backgroundColor =
-													'var(--color-primary)';
-												e.currentTarget.style.color =
-													'var(--color-text-black)';
-											}
-										}}
-										onMouseLeave={(e) => {
-											if (
-												!libraryIds.includes(anime.id)
-											) {
-												e.currentTarget.style.backgroundColor =
-													'var(--color-bg-card)';
-												e.currentTarget.style.color =
-													'var(--color-text-white)';
-											}
-										}}>
+										>
 										{libraryIds.includes(anime.id)
 											? '✓'
 											: '+'}
@@ -180,7 +164,8 @@ const Search = () => {
 									<img
 										src={anime.main_picture?.medium}
 										alt={getTitle(anime)}
-										className='w-full h-64 object-cover rounded-lg'
+										className='w-full h-68 object-cover rounded-lg'
+										onClick={() => setSelectedAnime(anime)}
 									/>
 									{/* Info */}
 									<div
@@ -220,7 +205,7 @@ const Search = () => {
 								onClick={() =>
 									setDisplayCount(
 										Math.min(
-											displayCount + 15,
+											displayCount + 13,
 											results.length,
 										),
 									)
@@ -239,6 +224,13 @@ const Search = () => {
 								Load More
 							</button>
 						</div>
+					)}
+					{selectedAnime && (
+						<AnimeModal
+							mode='search'
+							animeId={selectedAnime?.id}
+							onClose={() => setSelectedAnime(null)}
+						/>
 					)}
 				</div>
 			</PageTransition>

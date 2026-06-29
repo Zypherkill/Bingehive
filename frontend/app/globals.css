@@ -9,6 +9,7 @@
 	/* Background Colors */
 	--color-bg-dark: #111827;
 	--color-bg-overlay: rgba(17, 24, 39, 0.75);
+	--color-bg-overlay-card: rgba(17, 24, 39, 0.85);
 	--color-bg-card: #1f2937;
 	--color-bg-input: #374151;
 	--color-bg-secondary: #4b5563;

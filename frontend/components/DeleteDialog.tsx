@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
 import { deleteAnime } from '@/lib/api';
@@ -21,6 +21,17 @@ export const DeleteDialog = ({
 	onConfirm,
 }: DeleteDialogProps) => {
 	const [isDeleting, setIsDeleting] = useState(false);
+
+	useEffect(() => {
+		if (isOpen) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = 'unset';
+		}
+		return () => {
+			document.body.style.overflow = 'unset';
+		};
+	}, [isOpen]);
 
 	const handleConfirmDelete = async () => {
 		setIsDeleting(true);
@@ -93,7 +104,8 @@ export const DeleteDialog = ({
 										color: 'var(--color-accent-warning)',
 									}}>
 									{animeTitle}
-								</span> ?
+								</span>{' '}
+								?
 							</p>
 
 							{/* Buttons */}

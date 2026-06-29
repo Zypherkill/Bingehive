@@ -40,9 +40,14 @@ function logout(): void {
 }
 
 function getUserData(animeID: number): Promise<UserAnimeData> {
-	return fetch(`${API_URL}/library/${animeID}/userdata`, {
-		headers: authHeaders(),
-	}).then(handleResponse);
+	try {
+		return fetch(`${API_URL}/library/${animeID}/userdata`, {
+			headers: authHeaders(),
+		}).then(handleResponse);
+	} catch (error) {
+		console.error('Error fetching user data:', error);
+		throw error;
+	}
 }
 
 function handleResponse(res: Response) {
@@ -92,7 +97,7 @@ function addAnime(mal_id: number): Promise<LibraryEntryFull> {
 	}).then(handleResponse);
 }
 
-function getAnimeDetails(malId: number): Promise<{ data: Anime }> {
+function getAnimeDetails(malId: number): Promise<Anime> {
 	return fetch(`${API_URL}/anime/${malId}/details`, {
 		headers: authHeaders(),
 	}).then(handleResponse);

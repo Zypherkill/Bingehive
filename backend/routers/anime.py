@@ -19,12 +19,12 @@ async def search_anime_endpoint(q: str = None, current_user=Depends(get_current_
 
 
 @router.get("/{anime_id}/streaming")
-async def get_anime_streaming_links_endpoint(anime_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    anime = db.query(Anime).filter(Anime.id == anime_id).first()
-    if not anime:
-        raise HTTPException(status_code=404, detail="Anime not found")
-
-    links = await get_anime_streaming_links(anime.title)
+async def get_anime_streaming_links_endpoint(anime_id: int, current_user=Depends(get_current_user)):
+    anime_data = await get_anime_details(anime_id)
+    if anime_data is None:
+        raise HTTPException(status_code=503, detail="Could not fetch anime details")
+    title = anime_data.get("title")
+    links = await get_anime_streaming_links(title)
     if links is None:
         raise HTTPException(status_code=503, detail="Could not reach AniList API")
     return links

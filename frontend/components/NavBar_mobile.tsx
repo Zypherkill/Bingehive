@@ -19,10 +19,10 @@ export const NavBarMobile = () => {
 			}}>
 			<div className='flex justify-around items-center h-20'>
 				<Link
-					href='/'
+					href='/library'
 					className='flex flex-col items-center justify-center w-full h-full group transition-all hover:opacity-80'
 					style={{
-						color: isActive('/')
+						color: isActive('/library')
 							? 'var(--color-primary)'
 							: 'var(--color-text-secondary)',
 					}}>
