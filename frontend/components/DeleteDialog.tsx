@@ -111,6 +111,16 @@ export const DeleteDialog = ({
 							{/* Buttons */}
 							<div className='flex gap-3'>
 								<button
+									onClick={handleConfirmDelete}
+									disabled={isDeleting}
+									className='flex-1 px-4 py-2 rounded-lg font-medium transition-colors'
+									style={{
+										backgroundColor: 'var(--color-danger)',
+										color: 'var(--color-text-white)',
+									}}>
+									{isDeleting ? 'Removing...' : 'Remove'}
+								</button>
+								<button
 									onClick={onClose}
 									disabled={isDeleting}
 									className='flex-1 px-4 py-2 rounded-lg font-medium transition-colors'
@@ -120,16 +130,6 @@ export const DeleteDialog = ({
 										color: 'var(--color-text-secondary)',
 									}}>
 									Cancel
-								</button>
-								<button
-									onClick={handleConfirmDelete}
-									disabled={isDeleting}
-									className='flex-1 px-4 py-2 rounded-lg font-medium transition-colors'
-									style={{
-										backgroundColor: 'var(--color-danger)',
-										color: 'var(--color-text-white)',
-									}}>
-									{isDeleting ? 'Removing...' : 'Remove'}
 								</button>
 							</div>
 						</div>

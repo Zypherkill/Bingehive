@@ -7,11 +7,13 @@ from core.dependencies import get_current_user
 from pydantic import BaseModel
 from services.anime_client import get_anime_details
 import random
+from core.websockets_manager import manager
 
 router = APIRouter(prefix="/library",tags=["library"])
 
 class AddAnimeRequest(BaseModel):
     mal_id: int
+
 
 
 @router.post("/add")
@@ -59,6 +61,7 @@ async def add_anime(request: AddAnimeRequest, db: Session = Depends(get_db), cur
         db.add(entry)
         db.commit()
         db.refresh(entry)
+        await manager.broadcast({"type": "anime_added", "anime_id": id})
         return entry
     
     except Exception as e:
@@ -95,7 +98,7 @@ class UpdateStatusRequest(BaseModel):
     status: LibraryStatus
 
 @router.patch("/{anime_id}/status")
-def update_status(anime_id: int, request: UpdateStatusRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+async def update_status(anime_id: int, request: UpdateStatusRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     entry = db.query(LibraryEntry).filter(LibraryEntry.anime_id == anime_id).first()
     if not entry:
         raise HTTPException(status_code=404, detail="Anime not found in the library")
@@ -104,6 +107,7 @@ def update_status(anime_id: int, request: UpdateStatusRequest, db: Session = Dep
     entry.updated_by = current_user.id
     db.commit()
     db.refresh(entry)
+    await manager.broadcast({"type": "status_changed", "anime_id": anime_id, "status": request.status})
     return entry
 
 class UserDataRequest(BaseModel):
@@ -111,7 +115,7 @@ class UserDataRequest(BaseModel):
     notes: str = None
 
 @router.patch("/{anime_id}/userdata")
-def update_user_data(anime_id: int, request: UserDataRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+async def update_user_data(anime_id: int, request: UserDataRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     user_data = db.query(UserAnimeData).filter(UserAnimeData.anime_id == anime_id, UserAnimeData.user_id == current_user.id).first()
     if not user_data:
         user_data = UserAnimeData(
@@ -128,6 +132,7 @@ def update_user_data(anime_id: int, request: UserDataRequest, db: Session = Depe
             user_data.notes = request.notes
     db.commit()
     db.refresh(user_data)
+    await manager.broadcast({"type": "userdata_changed", "anime_id": anime_id})
     return user_data
 
 @router.get("/{anime_id}/userdata")
@@ -138,13 +143,14 @@ def get_user_data(anime_id: int, db: Session = Depends(get_db), current_user=Dep
     return user_data
 
 @router.delete("/{anime_id}")
-def remove_anime(anime_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+async def remove_anime(anime_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     entry = db.query(LibraryEntry).filter(LibraryEntry.anime_id == anime_id).first()
     if not entry:
         raise HTTPException(status_code=404, detail="Anime not found in the library")
     
     db.delete(entry)
     db.commit()
+    await manager.broadcast({"type": "anime_removed", "anime_id": anime_id})
     return {"detail": "Anime removed from library"}
 
 
@@ -156,7 +162,7 @@ class AddCustomAnimeRequest(BaseModel):
     mean_score: float = None
 
 @router.post("/add-custom")
-def add_custom_anime(request: AddCustomAnimeRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+async def add_custom_anime(request: AddCustomAnimeRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     custom_id = -random.randint(1, 999999)
     while db.query(Anime).filter(Anime.id == custom_id).first():
         custom_id = -random.randint(1, 999999)
@@ -186,4 +192,5 @@ def add_custom_anime(request: AddCustomAnimeRequest, db: Session = Depends(get_d
     db.add(entry)
     db.commit()
     db.refresh(entry)
+    await manager.broadcast({"type": "anime_added", "anime_id": custom_id})
     return entry

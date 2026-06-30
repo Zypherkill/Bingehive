@@ -10,6 +10,7 @@ import { useSearchStore } from '@/store/searchStore';
 import { getTitle } from '@/utils/utils';
 import { useAuthStore } from '@/store/authStore';
 import { AnimeModal } from '@/components/AnimeModal';
+import { useLibrarySocket } from '@/hooks/useLibrarySocket';
 
 const Search = () => {
 	const { query, setQuery, results, setResults, lastQuery, setLastQuery } =
@@ -20,6 +21,14 @@ const Search = () => {
 	const [libraryIds, setLibraryIds] = useState<number[]>([]);
 	const { token } = useAuthStore();
 	const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
+
+	useLibrarySocket((data) => {
+    if (data.type === 'anime_added') {
+        setLibraryIds((prev) => [...prev, data.anime_id]);
+    } else if (data.type === 'anime_removed') {
+        setLibraryIds((prev) => prev.filter((id) => id !== data.anime_id));
+    }
+});
 
 	useEffect(() => {
 		if (!token) return;
@@ -39,6 +48,7 @@ const Search = () => {
 				...item.node,
 				title_en: item.node.alternative_titles?.en ?? null,
 			}));
+			animeList.sort((a, b) => getTitle(a).localeCompare(getTitle(b)));
 			setResults(animeList);
 			setLastQuery('Popular');
 		});
@@ -66,7 +76,6 @@ const Search = () => {
 				(anime: Anime, index: number, self: Anime[]) =>
 					index === self.findIndex((a) => a.id === anime.id),
 			)
-			.sort((a, b) => (b.mean ?? 0) - (a.mean ?? 0));
 
 		setResults(filtered);
 		setIsLoading(false);
@@ -164,7 +173,7 @@ const Search = () => {
 									<img
 										src={anime.main_picture?.medium}
 										alt={getTitle(anime)}
-										className='w-full h-68 object-cover rounded-lg'
+										className='w-full h-69 object-cover rounded-lg'
 										onClick={() => setSelectedAnime(anime)}
 									/>
 									{/* Info */}

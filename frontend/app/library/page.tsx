@@ -12,12 +12,13 @@ import { useAuthStore } from '@/store/authStore';
 import { DeleteDialog } from '@/components/DeleteDialog';
 import { IoRemove } from 'react-icons/io5';
 import { AnimeModal } from '@/components/AnimeModal';
+import { useLibrarySocket } from '@/hooks/useLibrarySocket';
 
 const Library = () => {
 	const { token } = useAuthStore();
 	const [library, setLibrary] = useState<LibraryEntryFull[]>([]);
 	const [filter, setFilter] = useState<LibraryStatus>('plan_to_watch');
-	const [displayCount, setDisplayCount] = useState(12);
+	const [displayCount, setDisplayCount] = useState(18);
 	const [isLoading, setIsLoading] = useState(true);
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -35,6 +36,23 @@ const Library = () => {
 		'on_hold',
 		'dropped',
 	];
+
+	useLibrarySocket((data) => {
+		if (data.type === 'status_changed') {
+			setLibrary((prev) =>
+				prev.map((entry) =>
+					entry.anime_id === data.anime_id
+						? { ...entry, status: data.status }
+						: entry,
+				),
+			);
+		} else if (
+			data.type === 'anime_added' ||
+			data.type === 'anime_removed'
+		) {
+			getLibrary().then((newData) => setLibrary(newData ?? []));
+		}
+	});
 
 	useEffect(() => {
 		if (!token) return;
@@ -80,10 +98,16 @@ const Library = () => {
 				<div className='flex flex-col items-center min-h-screen mt-0 md:mt-6'>
 					<div
 						className='relative w-full max-w-7xl rounded-lg overflow-hidden min-h-96'
+						onClick={() => {
+							if (currentlyWatching) {
+								setSelectedEntry(currentlyWatching);
+							}
+						}}
 						style={{
 							backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.3)), url('/currently_watching.jpg')`,
 							backgroundSize: 'cover',
 							backgroundPosition: 'center',
+							cursor: currentlyWatching ? 'pointer' : 'default',
 						}}>
 						<div className='flex flex-col justify-end h-full p-8 min-h-96'>
 							<p
@@ -252,7 +276,7 @@ const Library = () => {
 											'/placeholder.png'
 										}
 										alt={getTitle(entry.anime)}
-										className='w-full h-68 object-cover rounded-t-md'
+										className='w-full h-69 object-cover rounded-t-md'
 										onClick={() => setSelectedEntry(entry)}
 									/>
 									<div

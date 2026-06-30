@@ -25,8 +25,6 @@ async def get_anime_streaming_links_endpoint(anime_id: int, current_user=Depends
         raise HTTPException(status_code=503, detail="Could not fetch anime details")
     title = anime_data.get("title")
     links = await get_anime_streaming_links(title)
-    if links is None:
-        raise HTTPException(status_code=503, detail="Could not reach AniList API")
     return links
 
 @router.get("/{anime_id}/details")
@@ -40,5 +38,5 @@ async def get_anime_details_endpoint(anime_id: int, current_user=Depends(get_cur
 async def get_popular(current_user=Depends(get_current_user)):
     data = await get_popular_anime()
     if data is None:
-        raise HTTPException(status_code=503, detail="Could not reach MAL API")
+        raise HTTPException(status_code=503, detail="Could not fetch popular anime")
     return data
