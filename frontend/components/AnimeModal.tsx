@@ -20,14 +20,19 @@ import {
 	getAnimeDetails,
 	getStreamingLinks,
 	getUserData,
-	updateStatus,
-	updateUserData,
+	getLibrary,
 } from '@/lib/api';
 import { getTitle, statusBgColor } from '@/utils/utils';
-import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { addAnime, getLibrary } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
+import { ConfirmDialog } from './ConfirmDialog';
+import {
+	handleStatusChange,
+	handleRatingChange,
+	handleNotesChange,
+	handleAddClickModal,
+	handleSwapStatus,
+} from '@/lib/handleFunctions';
 
 interface Props {
 	entry?: LibraryEntryFull;
@@ -50,6 +55,13 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [isAdding, setIsAdding] = useState(false);
 	const [libraryIds, setLibraryIds] = useState<number[]>([]);
+	const [swap, setSwap] = useState<{
+		existingAnimeId: number;
+		newStatus: LibraryStatus;
+	} | null>(null);
+	const [addStatusPrompt, setAddStatusPrompt] = useState(false);
+	const [selectedAddStatus, setSelectedAddStatus] =
+		useState<LibraryStatus>('plan_to_watch');
 
 	useEffect(() => {
 		if (!token) return;
@@ -61,15 +73,17 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 	}, [token]);
 
 	useEffect(() => {
+		const isCustom = id < 0;
+
 		const fetches = [
-			getAnimeDetails(id),
-			getStreamingLinks(id),
+			isCustom ? Promise.resolve(null) : getAnimeDetails(id),
+			isCustom ? Promise.resolve([]) : getStreamingLinks(id),
 			...(mode === 'library' ? [getUserData(id)] : []),
 		];
 
 		Promise.all(fetches).then(([details, streaming, userData]) => {
 			setAnimeDetails(details as Anime);
-			setStreamingLinks((streaming as StreamingLink[]) ?? []);
+			setStreamingLinks(Array.isArray(streaming) ? streaming : []);
 			if (userData) {
 				const ud = userData as UserAnimeData;
 				setRating(ud.rating ?? null);
@@ -86,43 +100,31 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 		};
 	}, []);
 
-	const handleStatusChange = async (newStatus: LibraryStatus) => {
-		setStatus(newStatus);
-		await updateStatus(id, newStatus);
-		toast.success('Status updated!');
+	const onStatusChange = (newStatus: LibraryStatus) =>
+		handleStatusChange(id, newStatus, setStatus, setSwap);
+
+	const onRatingChange = (newRating: number) =>
+		handleRatingChange(id, newRating, rating, notes, setRating);
+
+	const onNotesChange = (newNotes: string) =>
+		handleNotesChange(id, newNotes, rating, setNotes);
+
+	const onAddClick = () => {
+		setAddStatusPrompt(true);
+		setSelectedAddStatus('plan_to_watch');
 	};
 
-	const handleRatingChange = async (newRating: number) => {
-		const updated = newRating === rating ? null : newRating;
-		setRating(updated);
-		await updateUserData(id, updated ?? undefined, notes);
-	};
+	const onAddConfirm = () =>
+		handleAddClickModal(
+			id,
+			selectedAddStatus,
+			setIsAdding,
+			setLibraryIds,
+			setAddStatusPrompt,
+		);
 
-	const handleNotesChange = async (newNotes: string) => {
-		setNotes(newNotes);
-		await updateUserData(id, rating ?? undefined, newNotes);
-	};
-
-	const handleAddToLibrary = async () => {
-		if (!animeDetails) return;
-		await addAnime(animeDetails?.id);
-		toast.success('Anime added to library!');
-	};
-
-	const handleAddClick = async () => {
-		setIsAdding(true);
-		try {
-			await handleAddToLibrary();
-			const library = await getLibrary();
-			setLibraryIds(
-				library.map((entry: LibraryEntryFull) => entry.anime_id),
-			);
-		} catch (error) {
-			toast.error('Failed to add anime to library');
-		} finally {
-			setIsAdding(false);
-		}
-	};
+	const onSwapConfirm = (oldAnimeNewStatus: LibraryStatus) =>
+		handleSwapStatus(id, swap, setStatus, setSwap);
 
 	const title = entry
 		? getTitle({ title: entry.anime.title, title_en: entry.anime.title_en })
@@ -157,10 +159,20 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 					style={{ backgroundColor: 'var(--color-danger)' }}>
 					<FaTimes size={12} />
 				</button>
-
 				{isLoading ? (
-					<div className='flex items-center justify-center h-64'>
-						<p className='text-gray-400'>Loading...</p>
+					<div className='flex items-center flex-col justify-center w-full h-screen md:h-120'>
+						<motion.div
+							animate={{ rotate: 360 }}
+							transition={{
+								duration: 1,
+								repeat: Infinity,
+								ease: 'linear',
+							}}>
+							<FaSpinner
+								size={70}
+								style={{ color: 'var(--color-primary)' }}
+							/>
+						</motion.div>
 					</div>
 				) : (
 					<div className='flex flex-col md:flex-row w-full h-full md:h-auto gap-0 md:gap-0 overflow-y-auto md:overflow-hidden'>
@@ -176,7 +188,7 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 							<div
 								className='flex items-center justify-center h-80 rounded-lg md:hidden'
 								style={{
-									backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${animeDetails?.main_picture?.large})`,
+									backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${animeDetails?.main_picture?.large ?? entry?.anime.image_url ?? ''})`,
 									backgroundSize: 'cover',
 									backgroundPosition: '80% 20%',
 								}}>
@@ -214,7 +226,7 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 											<button
 												key={s}
 												onClick={() =>
-													handleStatusChange(s)
+													onStatusChange(s)
 												}
 												className='px-3 py-1.5 rounded-lg text-xs font-medium transition-all'
 												style={{
@@ -277,7 +289,7 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 									onClick={
 										libraryIds.includes(animeDetails.id)
 											? undefined
-											: handleAddClick
+											: onAddClick
 									}>
 									<div className='flex items-center justify-center gap-2'>
 										{isAdding ? (
@@ -306,12 +318,12 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 										)}
 										<span>
 											{isAdding
-												? 'Adding...'
+												? ''
 												: libraryIds.includes(
-															animeDetails.id,
-													  )
-													? 'Added'
-													: 'Add to Library'}
+														animeDetails.id,
+												  )
+												? 'Added'
+												: 'Add to Library'}
 										</span>
 									</div>
 								</motion.button>
@@ -326,13 +338,15 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 								style={{ color: 'var(--color-text-primary)' }}>
 								{title}
 							</h2>
-							<h2
-								className='text-md font-bold'
-								style={{
-									color: 'var(--color-text-secondary)',
-								}}>
-								Streaming services
-							</h2>
+							{streamingLinks.length > 0 ? (
+								<h2
+									className='text-md font-bold'
+									style={{
+										color: 'var(--color-text-secondary)',
+									}}>
+									Streaming services
+								</h2>
+							) : null}
 							<div className='grid grid-cols-2 gap-2'>
 								{streamingLinks.map((link, i) => (
 									<Link
@@ -362,37 +376,39 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 									</Link>
 								))}
 							</div>
-							<div>
-								{/* Genres */}
-								<h2
-									className='text-md font-bold'
-									style={{
-										color: 'var(--color-text-secondary)',
-									}}>
-									Genres
-								</h2>
-								<div className='grid grid-cols-2 gap-2 pt-2'>
-									{animeDetails?.genres
-										?.slice(0, 4)
-										.map((g) => (
-											<span
-												title={g.name}
-												key={g.id}
-												className='text-xs font-bold text-center px-2 md:px-3 py-1 rounded-full border'
-												style={{
-													borderColor:
-														'var(--color-primary)',
-													color: 'var(--color-primary)',
-												}}>
-												{g.name}
-											</span>
-										))}
+							{animeDetails?.genres?.length && (
+								<div>
+									{/* Genres */}
+									<h2
+										className='text-md font-bold'
+										style={{
+											color: 'var(--color-text-secondary)',
+										}}>
+										Genres
+									</h2>
+									<div className='grid grid-cols-2 gap-2 pt-2'>
+										{animeDetails?.genres
+											?.slice(0, 4)
+											.map((g) => (
+												<span
+													title={g.name}
+													key={g.id}
+													className='text-xs font-bold text-center px-2 md:px-3 py-1 rounded-full border'
+													style={{
+														borderColor:
+															'var(--color-primary)',
+														color: 'var(--color-primary)',
+													}}>
+													{g.name}
+												</span>
+											))}
+									</div>
 								</div>
-							</div>
+							)}
 
 							{/* Stats */}
 							<div className='grid grid-cols-3 gap-2 md:gap-3'>
-								{animeDetails && (
+								{(animeDetails || entry?.anime.episodes) && (
 									<div
 										className='rounded-xl p-2 md:p-3'
 										style={{
@@ -407,9 +423,12 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 											Episodes
 										</p>
 										<p className='text-white font-bold text-sm md:text-base'>
-											{animeDetails.num_episodes === 0
+											{(animeDetails?.num_episodes ||
+												entry?.anime.episodes) === 0
 												? 'Unknown'
-												: animeDetails.num_episodes}
+												: (animeDetails?.num_episodes ??
+													entry?.anime.episodes ??
+													'Unknown')}
 										</p>
 									</div>
 								)}
@@ -500,7 +519,7 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 											<button
 												key={n}
 												onClick={() =>
-													handleRatingChange(n)
+													onRatingChange(n)
 												}
 												onMouseEnter={() =>
 													setHoverRating(n)
@@ -528,7 +547,7 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 									<textarea
 										value={notes}
 										onChange={(e) =>
-											handleNotesChange(e.target.value)
+											onNotesChange(e.target.value)
 										}
 										placeholder='Write your private thoughts here...'
 										className='w-full bg-transparent text-sm text-white resize-none focus:outline-none placeholder-gray-600 rounded-lg p-3 h-28'
@@ -540,6 +559,103 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 								</div>
 							)}
 						</div>
+						<ConfirmDialog
+							isOpen={!!swap}
+							title='Another anime is being watched'
+							description='What should happen to it?'
+							onClose={() => setSwap(null)}
+							onConfirm={() => {}}>
+							<div className='flex flex-col gap-2'>
+								<div className='grid grid-cols-2 gap-2'>
+									{(
+										[
+											'completed',
+											'plan_to_watch',
+											'on_hold',
+											'dropped',
+										] as LibraryStatus[]
+									).map((s) => (
+										<button
+											key={s}
+											onClick={() => onSwapConfirm(s)}
+											className='px-3 py-2 rounded-lg text-sm text-left transition-colors'
+											style={{
+												backgroundColor:
+													'rgba(255,255,255,0.08)',
+												color: 'white',
+											}}>
+											Move to {s.replace(/_/g, ' ')}
+										</button>
+									))}
+								</div>
+							</div>
+						</ConfirmDialog>
+						<ConfirmDialog
+							isOpen={addStatusPrompt}
+							title='Choose a status for this anime'
+							description='Select the status you want to add this anime with:'
+							confirmLabel='Add'
+							onClose={() => setAddStatusPrompt(false)}
+							onConfirm={onAddConfirm}
+							isLoading={isAdding}>
+							<div className='flex flex-col gap-3'>
+								<div className='grid grid-cols-2 gap-2'>
+									{(
+										[
+											'plan_to_watch',
+											'completed',
+											'on_hold',
+											'dropped',
+										] as LibraryStatus[]
+									).map((s) => (
+										<button
+											key={s}
+											onClick={() =>
+												setSelectedAddStatus(s)
+											}
+											className='px-3 py-2 rounded-lg text-sm text-left transition-colors'
+											style={{
+												backgroundColor:
+													selectedAddStatus === s
+														? 'var(--color-primary)'
+														: 'rgba(255,255,255,0.08)',
+												color:
+													selectedAddStatus === s
+														? 'var(--color-text-black)'
+														: 'white',
+											}}>
+											{s.replace(/_/g, ' ')}
+										</button>
+									))}
+								</div>
+								<div className='flex gap-3 pt-2'>
+									<button
+										onClick={onAddConfirm}
+										disabled={isAdding}
+										className='flex-1 px-4 py-2 rounded-lg font-medium transition-colors'
+										style={{
+											backgroundColor:
+												'var(--color-primary)',
+											color: 'var(--color-text-black)',
+										}}>
+										{isAdding ? 'Adding...' : 'Add'}
+									</button>
+									<button
+										onClick={() =>
+											setAddStatusPrompt(false)
+										}
+										disabled={isAdding}
+										className='flex-1 px-4 py-2 rounded-lg font-medium transition-colors'
+										style={{
+											backgroundColor:
+												'var(--color-bg-secondary)',
+											color: 'var(--color-text-secondary)',
+										}}>
+										Cancel
+									</button>
+								</div>
+							</div>
+						</ConfirmDialog>
 					</div>
 				)}
 			</motion.div>

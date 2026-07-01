@@ -4,22 +4,29 @@ import React from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useRouter } from 'next/navigation';
 import { PageTransition } from '@/components/PageTransition';
+import { handleLoginSubmit } from '@/lib/handleFunctions';
+import { motion } from 'framer-motion';
+import { FaSpinner } from 'react-icons/fa';
 
 const Login = () => {
 	const { login } = useAuthStore();
 	const router = useRouter();
+	const [email, setEmail] = React.useState('');
+	const [password, setPassword] = React.useState('');
 	const [error, setError] = React.useState<string | null>(null);
+	const [isLoading, setIsLoading] = React.useState(false);
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		const email = (e.target as HTMLFormElement).email.value;
-		const password = (e.target as HTMLFormElement).password.value;
-		try {
-			await login(email, password);
-			router.push('/library');
-		} catch (err) {
-			setError('Invalid email or password');
-		}
+	const isFormValid = email && password;
+
+	const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+		setIsLoading(true);
+		await handleLoginSubmit(
+			e,
+			login,
+			() => router.push('/library'),
+			setError,
+		);
+		setIsLoading(false);
 	};
 
 	return (
@@ -64,6 +71,8 @@ const Login = () => {
 						}
 						type='email'
 						name='email'
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
 						placeholder='Email'
 						required
 					/>
@@ -80,19 +89,42 @@ const Login = () => {
 						}
 						type='password'
 						name='password'
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
 						placeholder='Password'
 						required
 					/>
 				</div>
-				<button
-					className='w-full font-bold py-3 px-6 rounded-lg hover:opacity-90 transition-opacity text-lg'
+				<motion.button
+					disabled={isLoading || !isFormValid}
+					whileHover={
+						!isLoading && isFormValid ? { opacity: 0.9 } : {}
+					}
+					className='w-full py-3 rounded-xl font-bold transition-all'
+					type='submit'
 					style={{
-						backgroundColor: 'var(--color-primary)',
-						color: 'var(--color-text-black)',
-					}}
-					type='submit'>
-					Login
-				</button>
+						backgroundColor: !isFormValid
+							? 'var(--color-bg-button-faded)'
+							: 'var(--color-primary)',
+						color: !isFormValid
+							? 'var(--color-text-secondary)'
+							: 'var(--color-text-black)',
+						cursor: !isFormValid ? 'not-allowed' : 'pointer',
+					}}>
+					<div className='flex items-center justify-center gap-2'>
+						{isLoading ? (
+							<motion.div
+								animate={{ rotate: 360 }}
+								transition={{
+									duration: 1,
+									repeat: Infinity,
+								}}>
+								<FaSpinner size={16} />
+							</motion.div>
+						) : null}
+						<span>{isLoading ? '' : 'Login'}</span>
+					</div>
+				</motion.button>
 				{error && (
 					<p
 						className='text-center mt-6'

@@ -30,7 +30,7 @@ export const BackToTop = () => {
 	return (
 		<button
 			onClick={scrollToTop}
-			className={`fixed md:hidden bottom-30 right-4 p-3 rounded-full transition-all duration-300 z-30 ${
+			className={`fixed bottom-30 md:bottom-70 md:right-130 right-4 p-3 rounded-full transition-all duration-300 z-30 ${
 				isVisible ? 'opacity-80' : 'opacity-0 pointer-events-none'
 			}`}
 			style={{

@@ -1,5 +1,5 @@
 import { useAuthStore } from '@/store/authStore';
-import { Anime, LibraryEntryFull, StreamingLink, User, UserAnimeData } from '../types';
+import { Anime, LibraryEntryFull, LibraryStatus, StreamingLink, User, UserAnimeData } from '../types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
@@ -56,6 +56,14 @@ function handleResponse(res: Response) {
 		window.location.href = '/';
 		throw new Error('Unauthorized');
 	}
+	if(res.status === 409) {
+		return res.json().then((data) => {
+			const error: any = new Error('Conflict');
+			error.existing_anime_id = data.detail?.existing_anime_id;
+			throw error;
+		});
+	}
+
 	return res.json();
 }
 
@@ -112,6 +120,7 @@ function getPopularAnime(): Promise<{ data: { node: Anime }[] }> {
 function addCustomAnime(data: {
 	title: string;
 	synopsis?: string;
+	image_url?: string;
 	episodes?: number;
 	score?: number;
 	genres?: string[];
@@ -137,6 +146,20 @@ function updateStatus(animeId: number, status: string): Promise<LibraryEntryFull
 		method: 'PATCH',
 		headers: authHeaders(),
 		body: JSON.stringify({ status }),
+	}).then(handleResponse);
+}
+
+function swapWatching(
+	newWatchingId: number,
+	oldAnimeNewStatus: LibraryStatus,
+): Promise<{ detail: string }> {
+	return fetch(`${API_URL}/library/swap-watching`, {
+		method: 'POST',
+		headers: authHeaders(),
+		body: JSON.stringify({
+			new_watching_id: newWatchingId,
+			old_anime_new_status: oldAnimeNewStatus,
+		}),
 	}).then(handleResponse);
 }
 
@@ -212,6 +235,7 @@ export {
 	getAnimeDetails,
 	addCustomAnime,
 	updateStatus,
+	swapWatching,
 	updateUserData,
 	getMe,
 	updateEmail,

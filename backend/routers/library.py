@@ -103,12 +103,44 @@ async def update_status(anime_id: int, request: UpdateStatusRequest, db: Session
     if not entry:
         raise HTTPException(status_code=404, detail="Anime not found in the library")
     
+    if request.status == LibraryStatus.watching:
+        existing_watching = db.query(LibraryEntry).filter(
+            LibraryEntry.status == LibraryStatus.watching,
+            LibraryEntry.anime_id != anime_id
+        ).first()
+        if existing_watching:
+            raise HTTPException(
+                status_code=409,
+                detail={"message": "Another anime is being watched", "existing_anime_id": existing_watching.anime_id}
+            )
+    
     entry.status = request.status
     entry.updated_by = current_user.id
     db.commit()
     db.refresh(entry)
     await manager.broadcast({"type": "status_changed", "anime_id": anime_id, "status": request.status})
     return entry
+
+class SwapWatchingRequest(BaseModel):
+    new_watching_id: int
+    old_anime_new_status: LibraryStatus
+
+@router.post("/swap-watching")
+async def swap_watching(request: SwapWatchingRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    old_entry = db.query(LibraryEntry).filter(LibraryEntry.status == LibraryStatus.watching).first()
+    if old_entry:
+        old_entry.status = request.old_anime_new_status
+        old_entry.updated_by = current_user.id
+
+    new_entry = db.query(LibraryEntry).filter(LibraryEntry.anime_id == request.new_watching_id).first()
+    new_entry.status = LibraryStatus.watching
+    new_entry.updated_by = current_user.id
+
+    db.commit()
+    await manager.broadcast({"type": "status_changed", "anime_id": request.new_watching_id, "status": "watching"})
+    if old_entry:
+        await manager.broadcast({"type": "status_changed", "anime_id": old_entry.anime_id, "status": request.old_anime_new_status})
+    return {"detail": "Swapped"}
 
 class UserDataRequest(BaseModel):
     rating: int = None

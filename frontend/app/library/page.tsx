@@ -3,22 +3,27 @@ import { useState, useEffect } from 'react';
 import { LibraryEntryFull, LibraryStatus } from '@/types';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { getLibrary } from '@/lib/api';
-import { FaChevronDown } from 'react-icons/fa';
+import { FaChevronDown, FaFilm } from 'react-icons/fa';
 import { statusColor } from '@/utils/utils';
 import { PageTransition } from '@/components/PageTransition';
 import { AnimatePresence, motion } from 'framer-motion';
 import { getTitle } from '@/utils/utils';
 import { useAuthStore } from '@/store/authStore';
-import { DeleteDialog } from '@/components/DeleteDialog';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { IoRemove } from 'react-icons/io5';
 import { AnimeModal } from '@/components/AnimeModal';
 import { useLibrarySocket } from '@/hooks/useLibrarySocket';
+import {
+	handleConfirmDelete,
+	handleDeleteClick,
+	handleRandomize,
+} from '@/lib/handleFunctions';
 
 const Library = () => {
 	const { token } = useAuthStore();
 	const [library, setLibrary] = useState<LibraryEntryFull[]>([]);
 	const [filter, setFilter] = useState<LibraryStatus>('plan_to_watch');
-	const [displayCount, setDisplayCount] = useState(18);
+	const [displayCount, setDisplayCount] = useState(15);
 	const [isLoading, setIsLoading] = useState(true);
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -76,21 +81,23 @@ const Library = () => {
 		(entry) => entry.status === 'watching',
 	);
 
-	const handleDeleteClick = (animeId: number, title: string) => {
-		setAnimeToDelete({ id: animeId, title });
-		setDeleteDialogOpen(true);
-	};
+	const onConfirmDelete = () =>
+		handleConfirmDelete(
+			animeToDelete,
+			setLibrary,
+			setAnimeToDelete,
+			setDeleteDialogOpen,
+		);
 
-	const handleConfirmDelete = () => {
-		if (animeToDelete) {
-			setLibrary((prevLibrary) =>
-				prevLibrary.filter(
-					(entry) => entry.anime.id !== animeToDelete.id,
-				),
-			);
-			setAnimeToDelete(null);
-		}
-	};
+	const onDeleteClick = (animeId: number, title: string) =>
+		handleDeleteClick(
+			animeId,
+			title,
+			setAnimeToDelete,
+			setDeleteDialogOpen,
+		);
+
+	const onRandomize = () => handleRandomize(library, currentlyWatching);
 
 	return (
 		<ProtectedRoute>
@@ -98,16 +105,10 @@ const Library = () => {
 				<div className='flex flex-col items-center min-h-screen mt-0 md:mt-6'>
 					<div
 						className='relative w-full max-w-7xl rounded-lg overflow-hidden min-h-96'
-						onClick={() => {
-							if (currentlyWatching) {
-								setSelectedEntry(currentlyWatching);
-							}
-						}}
 						style={{
 							backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.3)), url('/currently_watching.jpg')`,
 							backgroundSize: 'cover',
 							backgroundPosition: 'center',
-							cursor: currentlyWatching ? 'pointer' : 'default',
 						}}>
 						<div className='flex flex-col justify-end h-full p-8 min-h-96'>
 							<p
@@ -119,7 +120,17 @@ const Library = () => {
 							</p>
 							<h2
 								className='text-4xl font-bold mt-2'
-								style={{ color: 'var(--color-text-white)' }}>
+								onClick={() => {
+									if (currentlyWatching) {
+										setSelectedEntry(currentlyWatching);
+									}
+								}}
+								style={{
+									color: 'var(--color-text-white)',
+									cursor: currentlyWatching
+										? 'pointer'
+										: 'default',
+								}}>
 								{currentlyWatching
 									? getTitle(currentlyWatching.anime)
 									: 'Nothing selected'}
@@ -131,10 +142,12 @@ const Library = () => {
 									'No synopsis available.'}
 							</p>
 							<button
+								onClick={onRandomize}
 								className='mt-4 w-fit px-6 py-2 rounded transition-colors'
 								style={{
 									border: '2px solid var(--color-primary)',
 									color: 'var(--color-primary)',
+									cursor: 'pointer',
 								}}
 								onMouseEnter={(e) => {
 									e.currentTarget.style.backgroundColor =
@@ -152,12 +165,30 @@ const Library = () => {
 							</button>
 						</div>
 					</div>
-					<div className='flex items-center justify-between gap-10 w-full max-w-7xl mt-4 md:mt-6 px-6 md:px-0'>
-						<h1
-							className='text-2xl font-bold'
-							style={{ color: 'var(--color-text-white)' }}>
-							Library
-						</h1>
+					<div className='flex items-center justify-between w-full max-w-7xl mt-4 md:mt-6 px-6 md:px-0'>
+						<div className='flex items-center gap-3 mb-2'>
+												<div
+													className='w-10 h-10 rounded-lg flex items-center justify-center'
+													style={{ backgroundColor: 'var(--color-primary)' }}>
+													<FaFilm
+														style={{ color: 'var(--color-text-black)' }}
+													/>
+												</div>
+												<div>
+													<p
+														className='text-xs uppercase tracking-wider'
+														style={{
+															color: 'var(--color-text-secondary)',
+														}}>
+														Our Sanctuary
+													</p>
+													<h1
+														className='text-2xl font-bold'
+														style={{ color: 'var(--color-text-white)' }}>
+														Library
+													</h1>
+												</div>
+											</div>
 
 						<div
 							className='hidden md:flex rounded-lg gap-1 overflow-hidden transition-all duration-700'
@@ -183,7 +214,7 @@ const Library = () => {
 								</button>
 							))}
 						</div>
-						<div className='md:hidden relative w-full flex justify-end'>
+						<div className='md:hidden relative flex justify-end'>
 							<button
 								onClick={() => setDropdownOpen(!dropdownOpen)}
 								className='flex items-center justify-between px-2 py-1.5 rounded-lg text-sm font-medium transition-colors w-30'
@@ -244,11 +275,7 @@ const Library = () => {
 						</div>
 					</div>
 
-					{isLoading ? (
-						<p style={{ color: 'var(--color-text-white)' }}>
-							Loading...
-						</p>
-					) : filtered.length === 0 ? (
+					{filtered.length === 0 ? (
 						<p style={{ color: 'var(--color-text-white)' }}>
 							No anime found.
 						</p>
@@ -304,12 +331,12 @@ const Library = () => {
 											</p>
 											<IoRemove
 												className='cursor-pointer text-2xl hover:opacity-75 transition-opacity'
-												onClick={() =>
-													handleDeleteClick(
+												onClick={() => {
+													onDeleteClick(
 														entry.anime_id,
 														getTitle(entry.anime),
-													)
-												}
+													);
+												}}
 												style={{
 													color: 'var(--color-danger-dark)',
 												}}
@@ -326,7 +353,11 @@ const Library = () => {
 											setDisplayCount(
 												Math.min(
 													displayCount + 10,
-													library.filter((entry) => entry.status === filter).length,
+													library.filter(
+														(entry) =>
+															entry.status ===
+															filter,
+													).length,
 												),
 											)
 										}
@@ -349,15 +380,25 @@ const Library = () => {
 							)}
 						</div>
 					)}
-					<DeleteDialog
+					<ConfirmDialog
 						isOpen={deleteDialogOpen}
-						animeTitle={animeToDelete?.title || 'Missing title'}
-						animeId={animeToDelete?.id || 0}
-						onClose={() => {
-							setDeleteDialogOpen(false);
-							setAnimeToDelete(null);
-						}}
-						onConfirm={handleConfirmDelete}
+						title='Remove Anime?'
+						description={
+							<>
+								Are you sure you want to remove{' '}
+								<span
+									className='font-semibold'
+									style={{
+										color: 'var(--color-accent-warning)',
+									}}>
+									{animeToDelete?.title}
+								</span>
+								?
+							</>
+						}
+						confirmLabel='Remove'
+						onClose={() => setDeleteDialogOpen(false)}
+						onConfirm={onConfirmDelete}
 					/>
 
 					{selectedEntry && (

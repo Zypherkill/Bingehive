@@ -2,9 +2,9 @@
 import { useState } from 'react';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
-import { updateEmail, updatePassword, uploadAvatar } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { PageTransition } from '@/components/PageTransition';
+import { handleAvatarUpload, handleSaveChanges } from '@/lib/handleFunctions';
 
 const Settings = () => {
 	const { user, fetchUser } = useAuthStore();
@@ -13,62 +13,22 @@ const Settings = () => {
 	const [newPassword, setNewPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
 
-	const handleAvatarUpload = async (file: File) => {
-		try {
-			await uploadAvatar(file);
-			await fetchUser();
-			console.log('User after fetch:', user);
-			toast.success('Avatar updated!');
-		} catch {
-			toast.error('Could not upload avatar');
-		}
+	const onAvatarUpload = async (file: File) => {
+		await handleAvatarUpload(file, fetchUser);
 	};
 
-	const handleSaveChanges = async () => {
-		try {
-			const hasEmail = email.trim() !== '';
-			const hasPassword =
-				currentPassword.trim() !== '' ||
-				newPassword.trim() !== '' ||
-				confirmPassword.trim() !== '';
-
-			if (!hasEmail && !hasPassword) {
-				toast.error('Please enter at least email or password');
-				return;
-			}
-
-			if (hasPassword) {
-				if (newPassword !== confirmPassword) {
-					toast.error('Passwords do not match');
-					return;
-				}
-				if (!currentPassword || !newPassword) {
-					toast.error('Please fill in all password fields');
-					return;
-				}
-			}
-
-			if (hasEmail) {
-				await updateEmail(email);
-			}
-
-			if (hasPassword) {
-				await updatePassword(currentPassword, newPassword);
-			}
-
-			await fetchUser();
-
-			setEmail('');
-			setCurrentPassword('');
-			setNewPassword('');
-			setConfirmPassword('');
-
-			toast.success(
-				`${hasEmail && hasPassword ? 'Email and password' : hasEmail ? 'Email' : 'Password'} updated!`,
-			);
-		} catch {
-			toast.error('Could not update settings');
-		}
+	const onSaveChanges = async () => {
+		await handleSaveChanges(
+			email,
+			currentPassword,
+			newPassword,
+			confirmPassword,
+			setEmail,
+			setCurrentPassword,
+			setNewPassword,
+			setConfirmPassword,
+			fetchUser,
+		);
 	};
 
 	return (
@@ -136,7 +96,7 @@ const Settings = () => {
 											accept='image/*'
 											onChange={(e) => {
 												if (e.target.files) {
-													handleAvatarUpload(
+													onAvatarUpload(
 														e.target.files[0],
 													);
 												}
@@ -279,7 +239,7 @@ const Settings = () => {
 									borderTop: `1px solid var(--color-bg-input)`,
 								}}>
 								<button
-									onClick={handleSaveChanges}
+									onClick={onSaveChanges}
 									className='w-full font-bold py-3 px-4 rounded-lg transition-opacity hover:opacity-90'
 									style={{
 										backgroundColor: 'var(--color-primary)',
