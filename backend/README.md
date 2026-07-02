@@ -213,3 +213,8 @@ Valid values: `watching` `completed` `plan_to_watch` `dropped` `on_hold`
 **Password requirements:** min 8 characters, one uppercase letter, one number.
 
 **Avatar:** JPEG, PNG or WebP, max 2MB. Stored in Supabase Storage.
+
+---
+
+### Websockets
+| Websocket | `/ws/library` | Realtime updating library |
