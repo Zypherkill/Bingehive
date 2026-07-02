@@ -217,5 +217,7 @@ Valid values: `watching` `completed` `plan_to_watch` `dropped` `on_hold`
 ---
 
 ### Websockets
+
+| Method | Endpoint | Description |
 |---|---|---|
 | Websocket | `/ws/library` | Realtime updating library |
