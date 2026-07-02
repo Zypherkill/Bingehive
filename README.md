@@ -220,7 +220,7 @@ App available at `http://localhost:3000`.
 ### Backend — Railway
 
 1. Push your code to GitHub
-2. Create a new project on [Railway](https://railway.app) or [Render](https://render.com)
+2. Create a new project on [Railway](https://railway.app)
 3. Connect your GitHub repo and select the `backend/` folder
 4. Add all environment variables from your `.env` file
 5. Set the start command: `uvicorn main:app --host 0.0.0.0 --port 8000`
