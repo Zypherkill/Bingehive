@@ -9,6 +9,7 @@ A REST API built with FastAPI and Python. Handles authentication, anime search v
 - **FastAPI** — web framework
 - **SQLAlchemy** — database ORM
 - **Supabase** — hosted PostgreSQL database
+- **Websockets - for realtime rendering
 - **passlib/bcrypt** — password hashing
 - **python-jose** — JWT tokens
 - **httpx** — async HTTP client
@@ -41,6 +42,7 @@ backend/
 │   ├── limiter.py         # Rate limiter
 │   ├── security.py        # Password hashing and JWT
 │   └── supabase.py        # Supabase storage client
+|   └── websockets_manager.py        # Websocket manager
 ├── routers/
 │   ├── auth.py            # Login
 │   ├── anime.py           # Search, details, streaming
@@ -211,3 +213,11 @@ Valid values: `watching` `completed` `plan_to_watch` `dropped` `on_hold`
 **Password requirements:** min 8 characters, one uppercase letter, one number.
 
 **Avatar:** JPEG, PNG or WebP, max 2MB. Stored in Supabase Storage.
+
+---
+
+### Websockets
+
+| Method | Endpoint | Description |
+|---|---|---|
+| Websocket | `/ws/library` | Realtime updating library |
