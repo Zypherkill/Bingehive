@@ -153,6 +153,7 @@ JWT_EXPIRE_MINUTES=60
 MAL_CLIENT_ID=your-mal-client-id
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-service-role-key
+ALLOW_ORIGINS=your-vercel-link
 
 USER1_EMAIL=user1@example.com
 USER1_PASSWORD=password
@@ -187,7 +188,8 @@ npm install
 Create a `.env.local` file in `frontend/`:
 
 ```env
-NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_API_URL=http://127.0.0.1:8000 //change to railway later
+NEXT_PUBLIC_WS_URL = wss://your-railwaylink.up.railway.app
 ```
 
 Start the frontend:
@@ -215,10 +217,10 @@ App available at `http://localhost:3000`.
 
 ## Deployment
 
-### Backend — Railway or Render
+### Backend — Railway
 
 1. Push your code to GitHub
-2. Create a new project on [Railway](https://railway.app) or [Render](https://render.com)
+2. Create a new project on [Railway](https://railway.app)
 3. Connect your GitHub repo and select the `backend/` folder
 4. Add all environment variables from your `.env` file
 5. Set the start command: `uvicorn main:app --host 0.0.0.0 --port 8000`
@@ -229,5 +231,3 @@ App available at `http://localhost:3000`.
 2. Set the root directory to `frontend/`
 3. Add environment variable: `NEXT_PUBLIC_API_URL=https://your-backend-url`
 4. Deploy
-
-> After deploying, update `allow_origins` in `backend/main.py` to include your Vercel frontend URL, and update the WebSocket URL in `frontend/hooks/useLibrarySocket.ts` to use `wss://` instead of `ws://`.
