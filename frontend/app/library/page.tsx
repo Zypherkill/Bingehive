@@ -108,7 +108,7 @@ const Library = () => {
 						style={{
 							backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.3)), url('/currently_watching.jpg')`,
 							backgroundSize: 'cover',
-							backgroundPosition: 'center',
+							backgroundPosition: '70% 30%',
 						}}>
 						<div className='flex flex-col justify-end h-full p-8 min-h-96'>
 							<p

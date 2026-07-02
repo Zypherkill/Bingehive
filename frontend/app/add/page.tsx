@@ -13,9 +13,27 @@ const Add = () => {
 	const [imageUrl, setImageUrl] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
 
+	const validateImageUrl = (url: string): boolean => {
+		if (!url) return true;
+		try {
+			const parsed = new URL(url);
+			const validExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+			const hasValidExtension = validExtensions.some((ext) =>
+				parsed.pathname.toLowerCase().endsWith(ext),
+			);
+			return parsed.protocol === 'https:' && hasValidExtension;
+		} catch {
+			return false;
+		}
+	};
+
 	const handleSubmit = async () => {
 		if (!title) {
 			toast.error('Title is required');
+			return;
+		}
+		if (imageUrl && !validateImageUrl(imageUrl)) {
+			toast.error('Please enter a valid image URL (jpg, png, webp)');
 			return;
 		}
 		setIsLoading(true);
@@ -118,7 +136,10 @@ const Add = () => {
 									{
 										backgroundColor: 'var(--color-bg-dark)',
 										'--tw-ring-color':
-											'var(--color-primary)',
+											imageUrl &&
+											!validateImageUrl(imageUrl)
+												? 'var(--color-danger)'
+												: 'var(--color-primary)',
 									} as React.CSSProperties
 								}
 							/>
@@ -186,9 +207,7 @@ const Add = () => {
 									</motion.div>
 								) : null}
 								<span>
-									{isLoading
-										? ''
-										: 'Save to Library'}
+									{isLoading ? '' : 'Save to Library'}
 								</span>
 							</div>
 						</motion.button>
