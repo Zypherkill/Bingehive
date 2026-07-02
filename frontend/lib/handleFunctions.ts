@@ -32,10 +32,6 @@ export const handleLoginSubmit = async (
 	}
 };
 
-const handleAddSubmit = async () => {
-	
-}
-
 // Library - handleConfirmDelete
 export const handleConfirmDelete = async (
 	animeToDelete: { id: number; title: string } | null,
@@ -177,7 +173,7 @@ export const handleSearch = async (
 	setIsLoading(true);
 	setLastQuery(query);
 	setQuery('');
-	
+
 	const data = await searchAnime(query);
 	const animeList = data.data.map((item: { node: Anime }) => ({
 		...item.node,

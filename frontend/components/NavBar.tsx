@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation';
 import { useAuthStore } from '../store/authStore';
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { url } from 'inspector';
 
 export const NavBar = () => {
 	const pathname = usePathname();

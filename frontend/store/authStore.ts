@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { User } from '@/types';
-import { getMe, login as apiLogin, logout as apiLogout } from '@/lib/api'
+import { getMe, login as apiLogin, logout as apiLogout } from '@/lib/api';
 
 interface AuthStore {
 	user: User | null;
@@ -50,7 +50,6 @@ export const useAuthStore = create<AuthStore>()(
 		{
 			name: 'auth',
 			partialize: (state) => ({ token: state.token }),
-			
 		},
 	),
 );

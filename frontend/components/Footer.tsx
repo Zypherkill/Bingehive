@@ -1,17 +1,15 @@
 'use client';
-import React from 'react';
 import Link from 'next/link';
 import { FaLinkedin, FaGithub } from 'react-icons/fa';
 import { usePathname } from 'next/navigation';
 
 function Footer() {
-    const pathname = usePathname();
+	const pathname = usePathname();
 	if (pathname === '/') return null;
-        if (pathname === '/login') return null;
-        const isActive = (path: string) => pathname === path;
+	if (pathname === '/login') return null;
 	return (
 		<footer
-			className='mt-12 border-t'
+			className='mt-10 border-t pb-12'
 			style={{
 				backgroundColor: 'var(--color-bg-dark)',
 				borderTopColor: 'var(--color-bg-secondary)',
@@ -42,12 +40,10 @@ function Footer() {
 									e.currentTarget.style.color =
 										'var(--color-primary)';
 								}}
-
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.color =
-                                        'var(--color-text-secondary)';
-                                }}>
-
+								onMouseLeave={(e) => {
+									e.currentTarget.style.color =
+										'var(--color-text-secondary)';
+								}}>
 								<FaLinkedin />
 							</Link>
 							<Link
@@ -65,10 +61,10 @@ function Footer() {
 									e.currentTarget.style.color =
 										'var(--color-primary)';
 								}}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.color =
-                                        'var(--color-text-secondary)';
-                                }}>
+								onMouseLeave={(e) => {
+									e.currentTarget.style.color =
+										'var(--color-text-secondary)';
+								}}>
 								<FaGithub />
 							</Link>
 						</div>
