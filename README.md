@@ -189,6 +189,7 @@ Create a `.env.local` file in `frontend/`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://127.0.0.1:8000 //change to railway later
+NEXT_PUBLIC_WS_URL = wss://your-railwaylink.up.railway.app
 ```
 
 Start the frontend:
