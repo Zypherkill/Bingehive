@@ -216,7 +216,7 @@ App available at `http://localhost:3000`.
 
 ## Deployment
 
-### Backend — Railway or Render
+### Backend — Railway
 
 1. Push your code to GitHub
 2. Create a new project on [Railway](https://railway.app) or [Render](https://render.com)
