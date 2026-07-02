@@ -44,6 +44,7 @@ frontend/
 │   └── useLibrarySocket.ts   # WebSocket hook for real-time updates
 ├── lib/
 │   └── api.ts                # All API calls to backend
+|   └── handleFunctions.ts    # Handle functions
 ├── store/
 │   ├── authStore.ts          # Zustand auth store (user, token, login/logout)
 │   └── searchStore.ts        # Zustand search store (query, results)
