@@ -16,13 +16,6 @@ const Login = () => {
 	const [error, setError] = React.useState<string | null>(null);
 	const [isLoading, setIsLoading] = React.useState(false);
 
-	useEffect(() => {
-			document.body.style.overflow = 'hidden';
-			return () => {
-				document.body.style.overflow = 'unset';
-			};
-		}, []);
-
 	const isFormValid = email && password;
 
 	const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -38,7 +31,7 @@ const Login = () => {
 
 	return (
 		<div
-			className='min-h-screen flex items-center justify-center px-4'
+			className='h-screen flex items-center justify-center px-4 scroll-my-0'
 			style={{ backgroundColor: 'var(--color-bg-dark)' }}>
 			<form
 				className='w-full max-w-lg p-10 rounded-lg shadow-xl'
