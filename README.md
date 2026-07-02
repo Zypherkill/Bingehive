@@ -177,8 +177,6 @@ Start the backend:
 uvicorn main:app --reload
 ```
 
-API available at `http://127.0.0.1:8000` — Swagger docs at `http://127.0.0.1:8000/docs`.
-
 ### 4. Set up the frontend
 
 ```bash
