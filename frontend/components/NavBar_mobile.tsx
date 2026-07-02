@@ -6,7 +6,7 @@ import React from 'react';
 export const NavBarMobile = () => {
 	const pathname = usePathname();
 
-	if (pathname === '/login') return null;
+	if (pathname === '/') return null;
 
 	const isActive = (path: string) => pathname === path;
 
