@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';

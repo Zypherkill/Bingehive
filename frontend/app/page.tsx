@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useRouter } from 'next/navigation';
 import { PageTransition } from '@/components/PageTransition';
@@ -15,6 +15,13 @@ const Login = () => {
 	const [password, setPassword] = React.useState('');
 	const [error, setError] = React.useState<string | null>(null);
 	const [isLoading, setIsLoading] = React.useState(false);
+
+	useEffect(() => {
+			document.body.style.overflow = 'hidden';
+			return () => {
+				document.body.style.overflow = 'unset';
+			};
+		}, []);
 
 	const isFormValid = email && password;
 

@@ -123,8 +123,8 @@ export const AnimeModal = ({ entry, animeId, mode, onClose }: Props) => {
 			setAddStatusPrompt,
 		);
 
-	const onSwapConfirm = (oldAnimeNewStatus: LibraryStatus) =>
-		handleSwapStatus(id, swap, setStatus, setSwap);
+	const onSwapConfirm = (newStatus: LibraryStatus) =>
+		handleSwapStatus(id, swap, newStatus, setStatus, setSwap);
 
 	const title = entry
 		? getTitle({ title: entry.anime.title, title_en: entry.anime.title_en })

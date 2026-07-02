@@ -317,11 +317,12 @@ export const handleSwapStatus = async (
 		existingAnimeId: number;
 		newStatus: LibraryStatus;
 	} | null,
+	newStatus: LibraryStatus,
 	setStatus: (status: LibraryStatus) => void,
 	setSwap: (value: null) => void,
 ) => {
 	if (!swap) return;
-	await swapWatching(id, swap.newStatus);
+	await swapWatching(id, newStatus);
 	setStatus(swap.newStatus);
 	setSwap(null);
 	toast.success('Status updated!');
