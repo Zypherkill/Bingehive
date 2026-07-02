@@ -170,7 +170,6 @@ export const handleSearch = async (
 	query: string,
 	setLastQuery: (query: string) => void,
 	setQuery: (query: string) => void,
-	setDisplayCount: (count: number) => void,
 	setResults: (results: Anime[]) => void,
 	setIsLoading: (loading: boolean) => void,
 ) => {
@@ -178,8 +177,7 @@ export const handleSearch = async (
 	setIsLoading(true);
 	setLastQuery(query);
 	setQuery('');
-	setDisplayCount(12);
-
+	
 	const data = await searchAnime(query);
 	const animeList = data.data.map((item: { node: Anime }) => ({
 		...item.node,

@@ -23,7 +23,6 @@ const Library = () => {
 	const { token } = useAuthStore();
 	const [library, setLibrary] = useState<LibraryEntryFull[]>([]);
 	const [filter, setFilter] = useState<LibraryStatus>('plan_to_watch');
-	const [displayCount, setDisplayCount] = useState(15);
 	const [isLoading, setIsLoading] = useState(true);
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -74,8 +73,7 @@ const Library = () => {
 
 	const filtered = library
 		.filter((entry) => entry.status === filter)
-		.sort((a, b) => getTitle(a.anime).localeCompare(getTitle(b.anime)))
-		.slice(0, displayCount);
+		.sort((a, b) => getTitle(a.anime).localeCompare(getTitle(b.anime)));
 
 	const currentlyWatching = library.find(
 		(entry) => entry.status === 'watching',
@@ -345,39 +343,7 @@ const Library = () => {
 									</div>
 								</motion.div>
 							))}
-							{library.filter((entry) => entry.status === filter)
-								.length > displayCount && (
-								<div className='flex justify-center col-span-full pt-4'>
-									<button
-										onClick={() =>
-											setDisplayCount(
-												Math.min(
-													displayCount + 10,
-													library.filter(
-														(entry) =>
-															entry.status ===
-															filter,
-													).length,
-												),
-											)
-										}
-										className='px-6 py-2 rounded-lg font-semibold transition-colors'
-										style={{
-											backgroundColor:
-												'var(--color-primary)',
-											color: 'var(--color-text-black)',
-										}}
-										onMouseEnter={(e) => {
-											e.currentTarget.style.opacity =
-												'0.8';
-										}}
-										onMouseLeave={(e) => {
-											e.currentTarget.style.opacity = '1';
-										}}>
-										Load More
-									</button>
-								</div>
-							)}
+							
 						</div>
 					)}
 					<ConfirmDialog

@@ -17,7 +17,6 @@ const Search = () => {
 	const { query, setQuery, results, setResults, lastQuery, setLastQuery } =
 		useSearchStore();
 	const [isLoading, setIsLoading] = useState(false);
-	const [displayCount, setDisplayCount] = useState(15);
 
 	const [libraryIds, setLibraryIds] = useState<number[]>([]);
 	const { token } = useAuthStore();
@@ -60,7 +59,6 @@ const Search = () => {
 			query,
 			setLastQuery,
 			setQuery,
-			setDisplayCount,
 			setResults,
 			setIsLoading,
 		);
@@ -106,125 +104,80 @@ const Search = () => {
 						</p>
 					)}
 
-							<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6 max-w-7xl'>
-								{results
-									.map((anime, index) => (
-										<motion.div
-											key={anime.id}
-											className='relative cursor-pointer'
-											initial={{ opacity: 0, y: 10 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ delay: index * 0.1 }}>
-											{/* Betyg */}
-											<div
-												className='flex items-center absolute rounded top-0 left-0 px-3 py-2 text-sm font-bold'
-												style={{
-													backgroundColor:
-														'var(--color-bg-card)',
-													color: 'var(--color-accent-warning)',
-												}}>
-												⭐ {anime.mean ?? 'N/A'}
-											</div>
-											{/* Lägg till-knapp */}
-											<button
-												onClick={() =>
-													!libraryIds.includes(
-														anime.id,
-													) && onAdd(anime.id)
-												}
-												className='absolute top-0 right-0 w-9 h-9 flex items-center rounded justify-center transition-colors font-bold'
-												style={{
-													backgroundColor:
-														libraryIds.includes(
-															anime.id,
-														)
-															? 'var(--color-success)'
-															: 'var(--color-accent-warning)',
-													color: 'var(--color-text-black)',
-													cursor: libraryIds.includes(
-														anime.id,
-													)
-														? 'default'
-														: 'pointer',
-												}}>
-												{libraryIds.includes(anime.id)
-													? '✓'
-													: '+'}
-											</button>
-											{/* Bild */}
-											<img
-												src={anime.main_picture?.medium}
-												alt={getTitle(anime)}
-												className='w-full h-69 object-cover rounded-lg'
-												onClick={() =>
-													setSelectedAnime(anime)
-												}
-											/>
-											{/* Info */}
-											<div
-												className='p-3'
-												style={{
-													backgroundColor:
-														'var(--color-bg-card)',
-													borderRadius:
-														'0 0 0.5rem 0.5rem',
-												}}>
-												<p
-													className='font-semibold truncate'
-													style={{
-														color: 'var(--color-text-white)',
-													}}>
-													{getTitle(anime) ||
-														'Missing title'}
-												</p>
-												<p
-													className='text-sm truncate font-bold'
-													style={{
-														color: 'var(--color-primary)',
-													}}>
-													{anime.genres &&
-													anime.genres.length > 0
-														? anime.genres
-																.map(
-																	(g) =>
-																		g.name,
-																)
-																.join(' | ')
-														: 'N/A'}
-												</p>
-											</div>
-										</motion.div>
-									))
-									.slice(0, displayCount)}
-							</div>
-							{results.length > displayCount && (
-								<div className='flex justify-center mt-8 mb-8'>
-									<button
-										onClick={() =>
-											setDisplayCount(
-												Math.min(
-													displayCount + 13,
-													results.length,
-												),
-											)
-										}
-										className='px-6 py-2 rounded-lg font-semibold transition-colors'
-										style={{
-											backgroundColor:
-												'var(--color-primary)',
-											color: 'var(--color-text-black)',
-										}}
-										onMouseEnter={(e) => {
-											e.currentTarget.style.opacity =
-												'0.8';
-										}}
-										onMouseLeave={(e) => {
-											e.currentTarget.style.opacity = '1';
-										}}>
-										Load More
-									</button>
+					<div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6 max-w-7xl'>
+						{results.map((anime, index) => (
+							<motion.div
+								key={anime.id}
+								className='relative cursor-pointer'
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ delay: index * 0.1 }}>
+								{/* Betyg */}
+								<div
+									className='flex items-center absolute rounded top-0 left-0 px-3 py-2 text-sm font-bold'
+									style={{
+										backgroundColor: 'var(--color-bg-card)',
+										color: 'var(--color-accent-warning)',
+									}}>
+									⭐ {anime.mean ?? 'N/A'}
 								</div>
-							)}
+								{/* Lägg till-knapp */}
+								<button
+									onClick={() =>
+										!libraryIds.includes(anime.id) &&
+										onAdd(anime.id)
+									}
+									className='absolute top-0 right-0 w-9 h-9 flex items-center rounded justify-center transition-colors font-bold'
+									style={{
+										backgroundColor: libraryIds.includes(
+											anime.id,
+										)
+											? 'var(--color-success)'
+											: 'var(--color-accent-warning)',
+										color: 'var(--color-text-black)',
+										cursor: libraryIds.includes(anime.id)
+											? 'default'
+											: 'pointer',
+									}}>
+									{libraryIds.includes(anime.id) ? '✓' : '+'}
+								</button>
+								{/* Bild */}
+								<img
+									src={anime.main_picture?.medium}
+									alt={getTitle(anime)}
+									className='w-full h-69 object-cover rounded-lg'
+									onClick={() => setSelectedAnime(anime)}
+								/>
+								{/* Info */}
+								<div
+									className='p-3'
+									style={{
+										backgroundColor: 'var(--color-bg-card)',
+										borderRadius: '0 0 0.5rem 0.5rem',
+									}}>
+									<p
+										className='font-semibold truncate'
+										style={{
+											color: 'var(--color-text-white)',
+										}}>
+										{getTitle(anime) || 'Missing title'}
+									</p>
+									<p
+										className='text-sm truncate font-bold'
+										style={{
+											color: 'var(--color-primary)',
+										}}>
+										{anime.genres && anime.genres.length > 0
+											? anime.genres
+													.map((g) => g.name)
+													.join(' | ')
+											: 'N/A'}
+									</p>
+								</div>
+							</motion.div>
+						))}
+					</div>
+
 					{selectedAnime && (
 						<AnimeModal
 							mode='search'
