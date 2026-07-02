@@ -217,4 +217,5 @@ Valid values: `watching` `completed` `plan_to_watch` `dropped` `on_hold`
 ---
 
 ### Websockets
+|---|---|---|
 | Websocket | `/ws/library` | Realtime updating library |
