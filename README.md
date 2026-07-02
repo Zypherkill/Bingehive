@@ -153,6 +153,7 @@ JWT_EXPIRE_MINUTES=60
 MAL_CLIENT_ID=your-mal-client-id
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-service-role-key
+ALLOW_ORIGINS=your-vercel-link
 
 USER1_EMAIL=user1@example.com
 USER1_PASSWORD=password
@@ -229,5 +230,3 @@ App available at `http://localhost:3000`.
 2. Set the root directory to `frontend/`
 3. Add environment variable: `NEXT_PUBLIC_API_URL=https://your-backend-url`
 4. Deploy
-
-> After deploying, update `allow_origins` in `backend/main.py` to include your Vercel frontend URL, and update the WebSocket URL in `frontend/hooks/useLibrarySocket.ts` to use `wss://` instead of `ws://`.
