@@ -190,6 +190,7 @@ Create a `.env.local` file in `frontend/`:
 ```env
 NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
 ```
+Change to vercel url later
 
 Start the frontend:
 ```bash
